@@ -28,6 +28,12 @@ class CrmLead(models.Model):
             'phone2': self.partner_id.mobile,
             'email': self.partner_id.email,
             'note': f"Lead-dən yaradılıb: {self.name}\n" + (self.description or ''),
+            # Kontaktdakı sahələri əlavə et
+            'program': self.partner_id.program_id.id if self.partner_id.program_id else False,
+            'university': self.partner_id.university_id.id if self.partner_id.university_id else False,
+            'country': self.partner_id.student_country_id.id if self.partner_id.student_country_id else False,
+            'course': self.partner_id.course_id.id if self.partner_id.course_id else False,
+            'source': self.partner_id.source_id.id if self.partner_id.source_id else False,
         }
         
         # Tələbə qeydiyyatı yarat

@@ -9,7 +9,8 @@ class CourseGroupMember(models.Model):
     _order = 'join_date desc'
 
     # Əsas məlumatlar
-    student_id = fields.Many2one('edde.course.registration', string='Tələbə', required=True)
+    student_name = fields.Many2one('edde.course.registration', string='Tələbə', required=True, 
+                                   domain=[('status', 'in', ['confirmed', 'in_progress'])])
     group_id = fields.Many2one('course.group', string='Qrup', required=True)
     
     # Tariх və ödəniş
@@ -25,53 +26,42 @@ class CourseGroupMember(models.Model):
     ], string='Status', default='active')
     
     # Hesablanmış sahələr
-    student_name = fields.Char(string='Tələbə Adı', compute='_compute_student_name', store=True)
+    student_id = fields.Many2one(related='student_name', string='Tələbə ID', store=True, readonly=True)
     display_name = fields.Char(string='Ad', compute='_compute_display_name', store=True)
     
     # Qeydlər
     notes = fields.Text(string='Qeydlər')
     
-    @api.depends('student_id')
-    def _compute_student_name(self):
-        for member in self:
-            if member.student_id and member.student_id.student_id:
-                # student_id.student_id çünki bizim course.registration-da student_id var
-                member.student_name = f"{member.student_id.student_code} - {member.student_id.student_id.name}"
-            elif member.student_id:
-                member.student_name = member.student_id.student_code or "Tələbə"
-            else:
-                member.student_name = "Yeni tələbə"
-    
-    @api.depends('student_id', 'group_id')
+    @api.depends('student_name', 'group_id')
     def _compute_display_name(self):
         for member in self:
-            if member.student_id and member.group_id:
-                member.display_name = f"{member.student_name} - {member.group_id.name}"
+            if member.student_name and member.group_id:
+                member.display_name = f"{member.student_name.student_code} - {member.group_id.name}"
             else:
                 member.display_name = "Yeni üzv"
     
-    @api.constrains('student_id', 'group_id', 'status')
+    @api.constrains('student_name', 'group_id', 'status')
     def _check_unique_active_membership(self):
         """Bir tələbə eyni qrupda yalnız bir aktiv üzvlüyə malik ola bilər"""
         for member in self:
             if member.status == 'active':
                 existing = self.search([
-                    ('student_id', '=', member.student_id.id),
+                    ('student_name', '=', member.student_name.id),
                     ('group_id', '=', member.group_id.id),
                     ('status', '=', 'active'),
                     ('id', '!=', member.id)
                 ])
                 if existing:
                     raise ValidationError(
-                        f"{member.student_id.student_code} artıq {member.group_id.name} qrupunda aktiv üzvdür!"
+                        f"{member.student_name.student_code} artıq {member.group_id.name} qrupunda aktiv üzvdür!"
                     )
     
     @api.model
     def create(self, vals):
         """Üzvlük yaradıldıqda tələbənin aylıq ödənişini yenilə"""
         member = super().create(vals)
-        if member.monthly_payment and member.student_id:
-            member.student_id.write({'monthly_payment': member.monthly_payment})
+        if member.monthly_payment and member.student_name:
+            member.student_name.write({'monthly_payment': member.monthly_payment})
         return member
     
     def write(self, vals):
@@ -79,6 +69,6 @@ class CourseGroupMember(models.Model):
         res = super().write(vals)
         if 'monthly_payment' in vals:
             for member in self:
-                if member.student_id and member.status == 'active':
-                    member.student_id.write({'monthly_payment': member.monthly_payment})
+                if member.student_name and member.status == 'active':
+                    member.student_name.write({'monthly_payment': member.monthly_payment})
         return res

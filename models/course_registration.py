@@ -6,15 +6,17 @@ class CourseRegistration(models.Model):
     _name = 'edde.course.registration'
     _description = 'Course Registration'
     _inherit = ['mail.thread', 'mail.activity.mixin']
+    _rec_name = 'display_name'
     _order = 'create_date desc'
 
     student_code = fields.Char('Tələbə ID', readonly=True, copy=False, default='/')
     student_id = fields.Many2one('res.partner', string='Tələbə', required=True)
+    display_name = fields.Char('Ad', compute='_compute_display_name', store=True)
     father_name = fields.Char('Ata adı')
     id_card_number = fields.Char('Vəsiqə seriya nömrəsi')
     
     # Qrup üzvlüyü - köhnə group_id sahəsini silib yeni sistem
-    group_memberships = fields.One2many('course.group.member', 'student_id', string='Qrup Üzvlüyü')
+    group_memberships = fields.One2many('course.group.member', 'student_name', string='Qrup Üzvlüyü')
     active_groups = fields.Many2many('course.group', compute='_compute_active_groups', string='Aktiv Qruplar')
     
     schedule_ids = fields.One2many('course.lesson.schedule', 'lesson_id', string="Həftəlik Qrafik")
@@ -61,6 +63,18 @@ class CourseRegistration(models.Model):
     monthly_payment = fields.Float('Aylıq ödəniş')
     initial_result = fields.Text('İlkin nəticə')
 
+    @api.depends('student_code', 'student_id')
+    def _compute_display_name(self):
+        for registration in self:
+            if registration.student_code and registration.student_id:
+                registration.display_name = f"{registration.student_code} - {registration.student_id.name}"
+            elif registration.student_code:
+                registration.display_name = registration.student_code
+            elif registration.student_id:
+                registration.display_name = registration.student_id.name
+            else:
+                registration.display_name = "Yeni qeydiyyat"
+                
     @api.depends('group_memberships')
     def _compute_active_groups(self):
         for registration in self:
