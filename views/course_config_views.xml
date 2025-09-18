@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Course Program Views -->
+    <record id="view_course_program_form" model="ir.ui.view">
+        <field name="name">course.program.form</field>
+        <field name="model">course.program</field>
+        <field name="arch" type="xml">
+            <form string="Program">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="active"/>
+                    </group>
+                    <group>
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <record id="view_course_program_list" model="ir.ui.view">
+        <field name="name">course.program.list</field>
+        <field name="model">course.program</field>
+        <field name="arch" type="xml">
+            <list string="Programlar">
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+    
+    <record id="action_course_program" model="ir.actions.act_window">
+        <field name="name">Programlar</field>
+        <field name="res_model">course.program</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    
+    <!-- Course Course Views -->
+    <record id="view_course_course_form" model="ir.ui.view">
+        <field name="name">course.course.form</field>
+        <field name="model">course.course</field>
+        <field name="arch" type="xml">
+            <form string="Kurs">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="program_id"/>
+                        <field name="active"/>
+                    </group>
+                    <group>
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <record id="view_course_course_list" model="ir.ui.view">
+        <field name="name">course.course.list</field>
+        <field name="model">course.course</field>
+        <field name="arch" type="xml">
+            <list string="Kurslar">
+                <field name="name"/>
+                <field name="program_id"/>
+            </list>
+        </field>
+    </record>
+    
+    <record id="action_course_course" model="ir.actions.act_window">
+        <field name="name">Kurslar</field>
+        <field name="res_model">course.course</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    
+    <!-- Course Source Views -->
+    <record id="view_course_source_form" model="ir.ui.view">
+        <field name="name">course.source.form</field>
+        <field name="model">course.source</field>
+        <field name="arch" type="xml">
+            <form string="Mənbə">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="active"/>
+                    </group>
+                    <group>
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <record id="view_course_source_list" model="ir.ui.view">
+        <field name="name">course.source.list</field>
+        <field name="model">course.source</field>
+        <field name="arch" type="xml">
+            <list string="Mənbələr">
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+    
+    <record id="action_course_source" model="ir.actions.act_window">
+        <field name="name">Mənbələr</field>
+        <field name="res_model">course.source</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_course_country_form" model="ir.ui.view">
+        <field name="name">course.country.form</field>
+        <field name="model">course.country</field>
+        <field name="arch" type="xml">
+            <form string="Mənbə">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <record id="view_course_country_list" model="ir.ui.view">
+        <field name="name">course.country.list</field>
+        <field name="model">course.country</field>
+        <field name="arch" type="xml">
+            <list string="Ölkələr">
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+    
+    <record id="action_course_country" model="ir.actions.act_window">
+        <field name="name">Ölkələr</field>
+        <field name="res_model">course.country</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    
+    <!-- Menu Items -->
+    <menuitem id="menu_course_configuration" name="Konfiqurasiya" parent="menu_edde_root" sequence="100"/>
+    <menuitem id="menu_course_program" name="Programlar" parent="menu_course_configuration" action="action_course_program" sequence="10"/>
+    <menuitem id="menu_course_country" name="Ölkələr" parent="menu_course_configuration" action="action_course_country" sequence="15"/>
+    <menuitem id="menu_course_course" name="Kurslar" parent="menu_course_configuration" action="action_course_course" sequence="20"/>
+    <menuitem id="menu_course_source" name="Mənbələr" parent="menu_course_configuration" action="action_course_source" sequence="30"/>
+</odoo>

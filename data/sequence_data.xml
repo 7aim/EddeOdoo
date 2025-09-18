@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sequences for course.registration -->
+        <record id="seq_edde_course_registration" model="ir.sequence">
+            <field name="name">Course Registration Sequence</field>
+            <field name="code">edde.course.registration</field>
+            <field name="prefix">STU/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

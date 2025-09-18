@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Add fields to partner form view -->
+    <record id="view_partner_form_student_extension" model="ir.ui.view">
+        <field name="name">res.partner.form.student.extension</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <!-- Add button in the header -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_create_student" 
+                        type="object" 
+                        class="oe_stat_button" 
+                        icon="fa-graduation-cap"
+                        string="Tələbə Yarat"
+                        help="Bu kontaktı tələbə olaraq qeydiyyata al"/>
+            </xpath>
+            
+            <!-- Add student fields in a new page -->
+            <page name="internal_notes" position="after">
+                <page string="Tələbə Məlumatları">
+                    <group>
+                        <field name="program_id"/>
+                        <field name="course_id"/>
+                    </group>
+                    <group>
+                        <field name="university_id"/>
+                        <field name="student_country_id"/>
+                        <field name="source_id"/>
+                        <field name="is_teacher"/>
+                    </group>
+                </page>
+            </page>
+        </field>
+    </record>
+    
+    <!-- Add filter for universities -->
+    <record id="view_res_partner_filter_universities" model="ir.ui.view">
+        <field name="name">res.partner.filter.universities</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <filter name="type_person" position="after">
+            </filter>
+        </field>
+    </record>
+</odoo>
