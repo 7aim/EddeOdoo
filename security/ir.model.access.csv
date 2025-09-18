@@ -2,6 +2,7 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_edde_course_registration_user,edde.course.registration.user,model_edde_course_registration,base.group_user,1,1,1,0
 access_edde_course_registration_manager,edde.course.registration.manager,model_edde_course_registration,base.group_system,1,1,1,1
 access_course_group,course.group,model_course_group,base.group_user,1,1,1,1
+access_course_group_member,course.group.member,model_course_group_member,base.group_user,1,1,1,1
 access_course_group_schedule,course.group.schedule,model_course_group_schedule,base.group_user,1,1,1,1
 access_course_group_lesson_day,course.group.lesson.day,model_course_group_lesson_day,base.group_user,1,1,1,1
 access_course_program,course.program,model_course_program,base.group_user,1,1,1,1

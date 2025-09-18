@@ -28,12 +28,13 @@
                     </group>
                     <notebook>
                         <page string="Qrup Üzvləri">
-                            <field name="member_ids" domain="[('status', 'in', ['confirmed', 'in_progress'])]">
+                            <field name="member_ids">
                                 <list string="Qrup Üzvləri" create="true" editable="bottom">
-                                    <field name="student_id"/>
-                                    <field name="start_date"/>
-                                    <field name="total_attendances"/>
+                                    <field name="student_id" domain="[('status', 'in', ['confirmed', 'in_progress'])]"/>
+                                    <field name="join_date"/>
+                                    <field name="monthly_payment"/>
                                     <field name="status"/>
+                                    <field name="notes"/>
                                 </list>
                             </field>
                         </page>

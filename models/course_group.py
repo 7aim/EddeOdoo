@@ -21,7 +21,7 @@ class CourseGroup(models.Model):
 
     # Qrup üzvləri
     teacher_id = fields.Many2one('res.partner', string="Müəllim", domain=[('is_teacher', '=', True)])
-    member_ids = fields.One2many('edde.course.registration', 'group_id', string="Qrup Üzvləri")
+    member_ids = fields.One2many('course.group.member', 'group_id', string="Qrup Üzvləri")
     member_count = fields.Integer(string="Üzv Sayı", compute='_compute_member_count')
     
     # Dərs günləri
@@ -44,7 +44,7 @@ class CourseGroup(models.Model):
     @api.depends('member_ids')
     def _compute_member_count(self):
         for group in self:
-            group.member_count = len(group.member_ids.filtered(lambda l: l.status in ['confirmed', 'in_progress']))
+            group.member_count = len(group.member_ids.filtered(lambda m: m.status == 'active'))
     
     def generate_lesson_days(self):
         """Həftəlik qrafikə və həftə sayına əsasən dərs günlərini yaradır"""

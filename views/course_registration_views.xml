@@ -34,10 +34,16 @@
                             <field name="program"/>
                             <field name="course"/>
                             <field name="source"/>
+                            <field name="active_groups" widget="many2many_tags" readonly="1"/>
                         </group>
                     </group>
                     <notebook>
-                        <!--page string="Həftəlik Qrafik">
+                        <page string="Həftəlik Qrafik">
+                            <div class="oe_button_box">
+                                <button name="update_schedule_from_groups" type="object" 
+                                        string="Qrafiki Yenilə" class="btn-primary"
+                                        help="Aktiv qrup üzvlüklərindən həftəlik qrafik yaradır"/>
+                            </div>
                             <field name="schedule_ids">
                                 <list string="Həftəlik Qrafik" editable="bottom">
                                     <field name="day_of_week"/>
@@ -64,7 +70,18 @@
                                     <field name="notes"/>
                                 </list>
                             </field>
-                        </page-->
+                        </page>
+                        <page string="Qruplar">
+                            <field name="group_memberships">
+                                <list string="Qrup Üzvlüyü" editable="bottom">
+                                    <field name="group_id" options="{'no_create': True}"/>
+                                    <field name="join_date"/>
+                                    <field name="monthly_payment"/>
+                                    <field name="status"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                        </page>
                         <page string="Əlavə məlumat">
                             <group>
                                 <group>

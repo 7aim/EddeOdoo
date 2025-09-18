@@ -12,7 +12,11 @@ class CourseRegistration(models.Model):
     student_id = fields.Many2one('res.partner', string='Tələbə', required=True)
     father_name = fields.Char('Ata adı')
     id_card_number = fields.Char('Vəsiqə seriya nömrəsi')
-    group_id = fields.Many2one('course.group', string="Qrup")
+    
+    # Qrup üzvlüyü - köhnə group_id sahəsini silib yeni sistem
+    group_memberships = fields.One2many('course.group.member', 'student_id', string='Qrup Üzvlüyü')
+    active_groups = fields.Many2many('course.group', compute='_compute_active_groups', string='Aktiv Qruplar')
+    
     schedule_ids = fields.One2many('course.lesson.schedule', 'lesson_id', string="Həftəlik Qrafik")
 
     attendance_ids = fields.One2many('course.lesson.attendance', 'lesson_id', string="Dərsə İştiraklar")
@@ -52,33 +56,40 @@ class CourseRegistration(models.Model):
     ], string='Cinsi')
     phone = fields.Char('Telefon')
     phone2 = fields.Char('Telefon 2')
+    
+    # Financial Information
+    monthly_payment = fields.Float('Aylıq ödəniş')
+    initial_result = fields.Text('İlkin nəticə')
+
+    @api.depends('group_memberships')
+    def _compute_active_groups(self):
+        for registration in self:
+            active_memberships = registration.group_memberships.filtered(lambda m: m.status == 'active')
+            registration.active_groups = [(6, 0, active_memberships.mapped('group_id.id'))]
 
     @api.depends('attendance_ids')
     def _compute_total_attendances(self):
         for lesson in self:
             lesson.total_attendances = len(lesson.attendance_ids)
 
-    @api.onchange('group_id')
-    def _onchange_group_id(self):
-        """Qrup seçildikdə avtomatik qrafik əlavə et"""
-        if self.group_id:
-            # Əvvəlki qrafiki sil
-            self.schedule_ids = [(5, 0, 0)]
-            
-            # Qrupun qrafikini kopyala
-            schedule_vals = []
-            for group_schedule in self.group_id.schedule_ids:
-                if group_schedule.is_active:
-                    schedule_vals.append((0, 0, {
-                        'day_of_week': group_schedule.day_of_week,
-                        'start_time': group_schedule.start_time,
-                        'end_time': group_schedule.end_time,
-                        'is_active': True,
-                        'notes': f"Qrup qrafiki: {self.group_id.name}"
-                    }))
-            
-            if schedule_vals:
-                self.schedule_ids = schedule_vals
+    def update_schedule_from_groups(self):
+        """Aktiv qrup üzvlüklərindən həftəlik qrafik yaradır"""
+        self.schedule_ids = [(5, 0, 0)]  # Köhnə qrafiki sil
+        
+        schedule_vals = []
+        for membership in self.group_memberships.filtered(lambda m: m.status == 'active'):
+            group = membership.group_id
+            for group_schedule in group.schedule_ids.filtered(lambda s: s.is_active):
+                schedule_vals.append((0, 0, {
+                    'day_of_week': group_schedule.day_of_week,
+                    'start_time': group_schedule.start_time,
+                    'end_time': group_schedule.end_time,
+                    'is_active': True,
+                    'notes': f"Qrup: {group.name} ({membership.join_date})"
+                }))
+        
+        if schedule_vals:
+            self.schedule_ids = schedule_vals
 
     @api.onchange('student_id')
     def _onchange_student_id(self):
