@@ -8,7 +8,7 @@
     'category': 'Education',
     'author': 'EDDE',
     'website': '',
-    'depends': ['base', 'contacts', 'mail'],
+    'depends': ['base', 'contacts', 'mail', 'crm'],
     'data': [
         'security/ir.model.access.csv',
         'data/sequence_data.xml',

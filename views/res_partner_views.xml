@@ -44,4 +44,21 @@
             </filter>
         </field>
     </record>
+    
+    <!-- Add button to CRM Lead form -->
+    <record id="view_crm_lead_form_student_extension" model="ir.ui.view">
+        <field name="name">crm.lead.form.student.extension</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_create_student_from_lead" 
+                        type="object" 
+                        class="oe_stat_button" 
+                        icon="fa-graduation-cap"
+                        string="Tələbə Yarat"
+                        help="Bu lead-dən tələbə qeydiyyatı yarat"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>

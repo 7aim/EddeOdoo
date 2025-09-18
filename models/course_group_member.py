@@ -5,7 +5,7 @@ from odoo.exceptions import ValidationError
 class CourseGroupMember(models.Model):
     _name = 'course.group.member'
     _description = 'Qrup Üzvlüyü'
-    _rec_name = 'display_name'
+    _rec_name = 'student_name'
     _order = 'join_date desc'
 
     # Əsas məlumatlar
@@ -25,16 +25,28 @@ class CourseGroupMember(models.Model):
     ], string='Status', default='active')
     
     # Hesablanmış sahələr
+    student_name = fields.Char(string='Tələbə Adı', compute='_compute_student_name', store=True)
     display_name = fields.Char(string='Ad', compute='_compute_display_name', store=True)
     
     # Qeydlər
     notes = fields.Text(string='Qeydlər')
     
+    @api.depends('student_id')
+    def _compute_student_name(self):
+        for member in self:
+            if member.student_id and member.student_id.student_id:
+                # student_id.student_id çünki bizim course.registration-da student_id var
+                member.student_name = f"{member.student_id.student_code} - {member.student_id.student_id.name}"
+            elif member.student_id:
+                member.student_name = member.student_id.student_code or "Tələbə"
+            else:
+                member.student_name = "Yeni tələbə"
+    
     @api.depends('student_id', 'group_id')
     def _compute_display_name(self):
         for member in self:
             if member.student_id and member.group_id:
-                member.display_name = f"{member.student_id.student_code} - {member.group_id.name}"
+                member.display_name = f"{member.student_name} - {member.group_id.name}"
             else:
                 member.display_name = "Yeni üzv"
     

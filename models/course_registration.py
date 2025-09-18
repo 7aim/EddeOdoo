@@ -121,6 +121,40 @@ class CourseRegistration(models.Model):
         for rec in self:
             if rec.status == 'confirmed' and not rec.start_date:
                 rec.start_date = fields.Date.today()
+    
+    def update_schedule_from_groups(self):
+        """Aktiv qrup üzvlüklərindən həftəlik qrafik yaradır"""
+        self.ensure_one()
+        
+        # Mövcud qrafiki sil
+        self.schedule_ids.unlink()
+        
+        # Aktiv qrup üzvlüklərindən qrafik yarat
+        schedule_vals = []
+        for membership in self.group_memberships.filtered(lambda m: m.status == 'active'):
+            group = membership.group_id
+            if group.schedule_ids:
+                for group_schedule in group.schedule_ids.filtered(lambda s: s.is_active):
+                    schedule_vals.append((0, 0, {
+                        'day_of_week': group_schedule.day_of_week,
+                        'start_time': group_schedule.start_time,
+                        'end_time': group_schedule.end_time,
+                        'is_active': True,
+                        'notes': f"Qrup: {group.name} (Başlama: {membership.join_date})"
+                    }))
+        
+        if schedule_vals:
+            self.schedule_ids = schedule_vals
+            
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Uğurlu',
+                'message': f'{len(schedule_vals)} qrafik yaradıldı.',
+                'type': 'success',
+            }
+        }
 
 class CourseLessonSchedule(models.Model):
     _name = 'course.lesson.schedule'

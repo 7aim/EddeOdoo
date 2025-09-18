@@ -30,7 +30,8 @@
                         <page string="Qrup Üzvləri">
                             <field name="member_ids">
                                 <list string="Qrup Üzvləri" create="true" editable="bottom">
-                                    <field name="student_id" domain="[('status', 'in', ['confirmed', 'in_progress'])]"/>
+                                    <field name="student_name"/>
+                                    <!--field name="student_id"/-->
                                     <field name="join_date"/>
                                     <field name="monthly_payment"/>
                                     <field name="status"/>
