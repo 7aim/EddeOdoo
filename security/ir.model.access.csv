@@ -11,3 +11,4 @@ access_course_country,course.country,model_course_country,base.group_user,1,1,1,
 access_course_source,course.source,model_course_source,base.group_user,1,1,1,1
 access_course_lesson_schedule,course.lesson.schedule,model_course_lesson_schedule,base.group_user,1,1,1,1
 access_course_lesson_attendance,course.lesson.attendance,model_course_lesson_attendance,base.group_user,1,1,1,1
+access_course_lesson_attendance_old,course.lesson.attendance.old,model_course_lesson_attendance_old,base.group_user,1,1,1,1

@@ -216,6 +216,9 @@ class CourseGroupLessonDay(models.Model):
     
     notes = fields.Text(string="Qeydlər")
     
+    # Devamiyyət əlaqəsi
+    attendance_list = fields.One2many('course.lesson.attendance', 'lesson_day_id', string="İştirak Siyahısı")
+    
     @api.depends('lesson_date')
     def _compute_day_of_week(self):
         for lesson in self:
@@ -227,3 +230,51 @@ class CourseGroupLessonDay(models.Model):
         """Qrup seçildikdə default müəllimi təyin et"""
         if self.group_id and self.group_id.teacher_id:
             self.teacher_id = self.group_id.teacher_id
+    
+    @api.model
+    def create(self, vals):
+        """Dərs günü yaradılanda avtomatik olaraq devamiyyət qeydlərini yarat"""
+        lesson_day = super().create(vals)
+        lesson_day._create_attendance_records()
+        return lesson_day
+    
+    def _create_attendance_records(self):
+        """Bu dərs günü üçün qrup üzvlərinin devamiyyət qeydlərini yarat"""
+        self.ensure_one()
+        if not self.group_id:
+            return
+            
+        # Aktiv qrup üzvlərini tap
+        active_members = self.group_id.member_ids.filtered(lambda m: m.status == 'active')
+        
+        # Hər üzv üçün devamiyyət qeydi yarat
+        attendance_vals = []
+        for member in active_members:
+            # Əvvəlcə bu üzvün bu dərs günü üçün qeydi var mı yoxla
+            existing = self.env['course.lesson.attendance'].search([
+                ('lesson_day_id', '=', self.id),
+                ('student_id', '=', member.id)
+            ])
+            if not existing:
+                attendance_vals.append({
+                    'lesson_day_id': self.id,
+                    'student_id': member.id,
+                    'is_present': True  # Default olaraq iştirak var
+                })
+        
+        if attendance_vals:
+            self.env['course.lesson.attendance'].create(attendance_vals)
+    
+    def action_refresh_attendance(self):
+        """Yeni üzvlər əlavə olunduqda devamiyyət qeydlərini yenilə"""
+        self.ensure_one()
+        self._create_attendance_records()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Uğurlu',
+                'message': 'Devamiyyət qeydləri yeniləndi.',
+                'type': 'success',
+            }
+        }

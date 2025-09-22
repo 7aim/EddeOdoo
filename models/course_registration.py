@@ -21,7 +21,7 @@ class CourseRegistration(models.Model):
     
     schedule_ids = fields.One2many('course.lesson.schedule', 'lesson_id', string="Həftəlik Qrafik")
 
-    attendance_ids = fields.One2many('course.lesson.attendance', 'lesson_id', string="Dərsə İştiraklar")
+    attendance_ids = fields.One2many('course.lesson.attendance.old', 'lesson_id', string="Dərsə İştiraklar")
     total_attendances = fields.Integer(string="Ümumi İştirak", compute='_compute_total_attendances')
 
     # Program and Source
@@ -210,9 +210,9 @@ class CourseLessonSchedule(models.Model):
                 raise ValidationError("Bitmə vaxtı 0-24 aralığında olmalıdır!")
             
 
-class CourseLessonAttendance(models.Model):
-    _name = 'course.lesson.attendance'
-    _description = 'Kurs Dərs İştirakı'
+class CourseLessonAttendanceOld(models.Model):
+    _name = 'course.lesson.attendance.old'
+    _description = 'Kurs Dərs İştirakı (Köhnə)'
     _order = 'attendance_date desc, attendance_time desc'
 
     lesson_id = fields.Many2one('edde.course.registration', string="Dərs Abunəliyi", required=True)

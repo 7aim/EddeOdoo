@@ -32,10 +32,10 @@
                                 <list string="Qrup Üzvləri" create="true" editable="bottom">
                                     <field name="student_name"/>
                                     <!--field name="student_id"/-->
+                                    <field name="notes"/>
                                     <field name="join_date"/>
                                     <field name="monthly_payment"/>
                                     <field name="status"/>
-                                    <field name="notes"/>
                                 </list>
                             </field>
                         </page>
@@ -43,10 +43,10 @@
                             <field name="schedule_ids">
                                 <list string="Həftəlik Qrafik" editable="bottom">
                                     <field name="day_of_week"/>
+                                    <field name="notes"/>
                                     <field name="start_time" widget="float_time"/>
                                     <field name="end_time" widget="float_time"/>
                                     <field name="is_active"/>
-                                    <field name="notes"/>
                                 </list>
                             </field>
                             <div class="mt-3">
@@ -74,7 +74,7 @@
                                 </div>
                             </div>
                             <field name="lesson_day_ids">
-                                <list string="Dərs Günləri" create="false" delete="false" editable="bottom">
+                                <list string="Dərs Günləri" create="false" delete="false">
                                     <field name="lesson_date"/>
                                     <field name="day_of_week"/>
                                     <field name="start_time" widget="float_time"/>
@@ -162,6 +162,67 @@
                     <notebook>
                         <page string="Qeydlər">
                             <field name="notes" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Course Group Lesson Day Form View -->
+    <record id="view_course_group_lesson_day_form" model="ir.ui.view">
+        <field name="name">course.group.lesson.day.form</field>
+        <field name="model">course.group.lesson.day</field>
+        <field name="arch" type="xml">
+            <form string="Dərs Günü">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="lesson_date" readonly="1"/>
+                        </h1>
+                        <h2>
+                            <field name="group_id" readonly="1" options="{'no_open': True}"/>
+                        </h2>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="day_of_week" readonly="1"/>
+                            <field name="start_time" widget="float_time"/>
+                            <field name="end_time" widget="float_time"/>
+                        </group>
+                        <group>
+                            <field name="teacher_id" domain="[('is_teacher', '=', True)]" options="{'no_create': True}"/>
+                            <field name="status"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Tələbə Devamiyyəti">
+                            <div class="row mb-3">
+                                <div class="col-8">
+                                    <div class="alert alert-info mb-0">
+                                        <strong>Məlumat:</strong> Bu dərsə iştirak edəcək tələbələrin siyahısı aşağıdadır. 
+                                        Checkbox-ı işarələdiyiniz tələbələr "iştirak etdi" kimi qeydə alınacaq.
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <button name="action_refresh_attendance" type="object" 
+                                            string="Siyahını Yenilə" class="btn-secondary"
+                                            help="Yeni üzvlər əlavə olunduqda devamiyyət siyahısını yeniləyin"/>
+                                </div>
+                            </div>
+                            
+                            <field name="attendance_list">
+                                <list editable="bottom" create="false" delete="false">
+                                    <field name="student_name" readonly="1"/>
+                                    <field name="is_present" widget="boolean_toggle"/>
+                                    <field name="excuse" attrs="{'readonly': [('is_present', '=', True)]}"/>
+                                    <field name="notes" placeholder="Əlavə qeydlər"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Qeydlər">
+                            <field name="notes" nolabel="1" placeholder="Dərs haqqında əlavə qeydlər..."/>
                         </page>
                     </notebook>
                 </sheet>
