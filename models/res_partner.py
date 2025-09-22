@@ -5,10 +5,10 @@ class Partner(models.Model):
     
     # Student related fields
     is_teacher = fields.Boolean(string="Müəllim", default=False)
-    program_id = fields.Many2one('course.program', string='Program')
+    program_id = fields.Many2many('course.program', string='Program')
     university_id = fields.Many2one('res.partner', string='Universitet')
     student_country_id = fields.Many2one('course.country', string='Ölkə')  # Changed from country_id to avoid conflicts
-    course_id = fields.Many2one('course.course', string='Kurs')
+    course_id = fields.Many2many('course.course', string='Kurs')
     source_id = fields.Many2one('course.source', string='Mənbə')
     
     # Button action to create a student registration

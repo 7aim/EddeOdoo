@@ -10,13 +10,13 @@ class CourseGroup(models.Model):
     _order = 'name'
     
     name = fields.Char(string="Qrup Adı", required=True)
-    program_id = fields.Many2one('course.program', string="Program", required=True)
-    course_id = fields.Many2one('course.course', string="Kurs", required=True)
+    program_id = fields.Many2many('course.program', string="Program", required=True)
+    course_id = fields.Many2many('course.course', string="Kurs", required=True)
     
     # Qrup qrafiki
     schedule_ids = fields.One2many('course.group.schedule', 'group_id', string="Qrup Qrafiki")
     number_of_weeks = fields.Integer(string="Həftə sayı", default=4)
-    start_date = fields.Date(string="Başlama Tarixi")
+    start_date = fields.Date(string="Başlama Tarixi", default=fields.Date.today, required=True)
     end_date = fields.Date(compute='_compute_end_date', string="Bitmə Tarixi")
 
     # Qrup üzvləri
@@ -26,6 +26,14 @@ class CourseGroup(models.Model):
     
     # Dərs günləri
     lesson_day_ids = fields.One2many('course.group.lesson.day', 'group_id', string="Dərs Günləri")
+    
+    # Statistika sahələri
+    lesson_day_count = fields.Integer(
+        string='Ümumi Dərs Sayı', compute='_compute_lesson_stats'
+    )
+    lessons_with_teacher_count = fields.Integer(
+        string='Müəllimi olan Dərslər', compute='_compute_lesson_stats'
+    )
     
     # Aktivlik
     is_active = fields.Boolean(string="Aktiv", default=True)
@@ -45,6 +53,12 @@ class CourseGroup(models.Model):
     def _compute_member_count(self):
         for group in self:
             group.member_count = len(group.member_ids.filtered(lambda m: m.status == 'active'))
+    
+    @api.depends('lesson_day_ids', 'lesson_day_ids.teacher_id')
+    def _compute_lesson_stats(self):
+        for group in self:
+            group.lesson_day_count = len(group.lesson_day_ids)
+            group.lessons_with_teacher_count = len(group.lesson_day_ids.filtered('teacher_id'))
     
     def generate_lesson_days(self):
         """Həftəlik qrafikə və həftə sayına əsasən dərs günlərini yaradır"""
@@ -74,6 +88,7 @@ class CourseGroup(models.Model):
                     'lesson_date': current_date,
                     'start_time': schedule.start_time,
                     'end_time': schedule.end_time,
+                    'teacher_id': self.teacher_id.id if self.teacher_id else False,
                     'status': 'scheduled'
                 })
             
@@ -98,6 +113,34 @@ class CourseGroup(models.Model):
             'params': {
                 'title': 'Uğurlu',
                 'message': 'Dərs günləri uğurla yaradıldı.',
+                'type': 'success',
+            }
+        }
+    
+    def action_assign_all_teachers(self):
+        """Bütün dərs günlərinə qrupun əsas müəllimini təyin et"""
+        self.ensure_one()
+        if not self.teacher_id:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Xəbərdarlıq',
+                    'message': 'Əvvəlcə qrupun əsas müəllimini təyin edin.',
+                    'type': 'warning',
+                }
+            }
+        
+        # Bütün dərs günlərinə təyin et
+        lesson_days = self.lesson_day_ids.filtered(lambda l: not l.teacher_id)
+        lesson_days.write({'teacher_id': self.teacher_id.id})
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Uğurlu',
+                'message': f'{len(lesson_days)} dərsdə müəllim təyin edildi.',
                 'type': 'success',
             }
         }
@@ -161,6 +204,9 @@ class CourseGroupLessonDay(models.Model):
     start_time = fields.Float(string="Başlama Vaxtı")
     end_time = fields.Float(string="Bitmə Vaxtı")
     
+    # Müəllim
+    teacher_id = fields.Many2one('res.partner', string="Müəllim", domain=[('is_teacher', '=', True)])
+    
     # Status
     status = fields.Selection([
         ('scheduled', 'Planlaşdırılıb'),
@@ -175,3 +221,9 @@ class CourseGroupLessonDay(models.Model):
         for lesson in self:
             if lesson.lesson_date:
                 lesson.day_of_week = str(lesson.lesson_date.weekday())
+    
+    @api.onchange('group_id')
+    def _onchange_group_id(self):
+        """Qrup seçildikdə default müəllimi təyin et"""
+        if self.group_id and self.group_id.teacher_id:
+            self.teacher_id = self.group_id.teacher_id

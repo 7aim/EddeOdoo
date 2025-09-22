@@ -16,8 +16,8 @@
                         <group>
                             <field name="teacher_id"/>
                             <field name="number_of_weeks"/>
-                            <field name="program_id"/>
-                            <field name="course_id"/>
+                            <field name="program_id" widget="many2many_tags"/>
+                            <field name="course_id" widget="many2many_tags"/>
                         </group>
                         <group>
                             <field name="start_date"/>
@@ -58,16 +58,28 @@
                             </div>
                         </page>
                         <page string="Dərs Günləri">
-                            <div class="oe_button_box">
-                                <button name="action_generate_lesson_days" type="object" 
-                                        string="Dərs Günlərini Yarat" class="btn-primary"/>
+                            <div class="row">
+                                <div class="col-6">
+                                    <button name="action_generate_lesson_days" type="object" 
+                                            string="Dərs Günlərini Yarat" class="btn-primary"/>
+                                    <button name="action_assign_all_teachers" type="object" 
+                                            string="Bütün dərslərə müəllim təyin et" class="btn-secondary ml8"/>
+                                </div>
+                                <div class="col-6">
+                                    <div class="alert alert-info">
+                                        <strong>Statistika:</strong><br/>
+                                        Ümumi dərs sayı: <field name="lesson_day_count" readonly="1" nolabel="1"/><br/>
+                                        Müəllimi olan: <field name="lessons_with_teacher_count" readonly="1" nolabel="1"/>
+                                    </div>
+                                </div>
                             </div>
                             <field name="lesson_day_ids">
-                                <list string="Dərs Günləri" create="false" delete="false">
+                                <list string="Dərs Günləri" create="false" delete="false" editable="bottom">
                                     <field name="lesson_date"/>
                                     <field name="day_of_week"/>
                                     <field name="start_time" widget="float_time"/>
                                     <field name="end_time" widget="float_time"/>
+                                    <field name="teacher_id" domain="[('is_teacher', '=', True)]" options="{'no_create': True}"/>
                                     <field name="status"/>
                                     <field name="notes"/>
                                 </list>
@@ -122,5 +134,39 @@
 
     <menuitem id="menu_course_groups" name="Qruplar" parent="menu_edde_root" 
               action="action_course_group" sequence="2"/>
+
+    <!-- Course Group Lesson Day Form View -->
+    <record id="view_course_group_lesson_day_form" model="ir.ui.view">
+        <field name="name">course.group.lesson.day.form</field>
+        <field name="model">course.group.lesson.day</field>
+        <field name="arch" type="xml">
+            <form string="Dərs Günü">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="group_id" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="lesson_date"/>
+                            <field name="day_of_week"/>
+                            <field name="start_time" widget="float_time"/>
+                            <field name="end_time" widget="float_time"/>
+                        </group>
+                        <group>
+                            <field name="teacher_id" domain="[('is_teacher', '=', True)]"/>
+                            <field name="status"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Qeydlər">
+                            <field name="notes" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
 
 </odoo>

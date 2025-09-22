@@ -38,7 +38,7 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Həftəlik Qrafik">
+                        <!--page string="Həftəlik Qrafik">
                             <div class="oe_button_box">
                                 <button name="update_schedule_from_groups" type="object" 
                                         string="Qrafiki Yenilə" class="btn-primary"
@@ -60,8 +60,8 @@
                                     <li>Bazar → 11:00–12:00</li>
                                 </ul>
                             </div>
-                        </page>
-                        <page string="Dərsə İştiraklar">
+                        </page-->
+                        <!--page string="Dərsə İştiraklar">
                             <field name="attendance_ids">
                                 <list string="İştiraklar" create="false">
                                     <field name="attendance_date"/>
@@ -70,7 +70,7 @@
                                     <field name="notes"/>
                                 </list>
                             </field>
-                        </page>
+                        </page-->
                         <page string="Qruplar">
                             <field name="group_memberships">
                                 <list string="Qrup Üzvlüyü" editable="bottom">
