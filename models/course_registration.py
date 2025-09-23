@@ -60,7 +60,7 @@ class CourseRegistration(models.Model):
     phone2 = fields.Char('Telefon 2')
     
     # Financial Information
-    monthly_payment = fields.Float('Aylıq ödəniş')
+    monthly_payment = fields.Float('Ödəniş')
     initial_result = fields.Text('İlkin nəticə')
 
     @api.depends('student_code', 'student_id')

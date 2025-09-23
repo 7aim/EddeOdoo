@@ -37,7 +37,7 @@ class CourseGroup(models.Model):
     
     # Üzv statistikaları
     total_monthly_payment = fields.Float(
-        string='Ümumi Aylıq Ödəniş', compute='_compute_member_stats'
+        string='Ümumi Ödəniş', compute='_compute_member_stats'
     )
     active_member_count = fields.Integer(
         string='Aktiv Üzv Sayı', compute='_compute_member_stats'

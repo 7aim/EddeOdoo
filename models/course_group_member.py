@@ -15,7 +15,7 @@ class CourseGroupMember(models.Model):
     
     # Tariх və ödəniş
     join_date = fields.Date(string='Başlama Tarixi', default=fields.Date.today, required=True)
-    monthly_payment = fields.Float(string='Aylıq Ödəniş', help='Bu qrup üçün aylıq ödəniş məbləği')
+    monthly_payment = fields.Float(string='Ödəniş', help='Bu qrup üçün ödəniş məbləği')
     
     # Status
     status = fields.Selection([
@@ -58,14 +58,14 @@ class CourseGroupMember(models.Model):
     
     @api.model
     def create(self, vals):
-        """Üzvlük yaradıldıqda tələbənin aylıq ödənişini yenilə"""
+        """Üzvlük yaradıldıqda tələbənin ödənişini yenilə"""
         member = super().create(vals)
         if member.monthly_payment and member.student_name:
             member.student_name.write({'monthly_payment': member.monthly_payment})
         return member
     
     def write(self, vals):
-        """Üzvlük yenilənəndə tələbənin aylıq ödənişini yenilə"""
+        """Üzvlük yenilənəndə tələbənin ödənişini yenilə"""
         res = super().write(vals)
         if 'monthly_payment' in vals:
             for member in self:
