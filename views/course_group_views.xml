@@ -290,8 +290,8 @@
                 <field name="lesson_date" string="Tarix"/>
                 
                 <filter string="Bu gün" name="today" domain="[('lesson_date', '=', context_today())]"/>
-                <filter string="Bu həftə" name="this_week" domain="[('lesson_date', '&gt;=', (context_today() - relativedelta(days=7)))]"/>
-                <filter string="Bu ay" name="this_month" domain="[('lesson_date', '&gt;=', (context_today() - relativedelta(months=1)))]"/>
+                <filter string="Son həftə" name="recent" domain="[('lesson_date', '&gt;=', (context_today() - 7))]"/>
+                <filter string="Gələcək" name="future" domain="[('lesson_date', '&gt;=', context_today())]"/>
                 <separator/>
                 <filter string="Planlaşdırılmış" name="scheduled" domain="[('status', '=', 'scheduled')]"/>
                 <filter string="Keçirilmiş" name="completed" domain="[('status', '=', 'completed')]"/>
@@ -313,7 +313,7 @@
         <field name="res_model">course.group.lesson.day</field>
         <field name="view_mode">calendar,list</field>
         <field name="search_view_id" ref="view_course_group_lesson_day_search"/>
-        <field name="context">{'search_default_this_week': 1}</field>
+        <field name="context">{'search_default_scheduled': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Dərs təqvimi
