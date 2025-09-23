@@ -162,6 +162,6 @@
 
     <!-- Course Registration Menu -->
     <menuitem id="menu_edde_root" name="EDDE Kurslar" sequence="10"/>
-    <menuitem id="menu_course_registration" name="Qeydiyyatlar" parent="menu_edde_root" action="action_course_registration" sequence="1"/>
+    <menuitem id="menu_course_registration" name="👤 Qeydiyyatlar" parent="menu_edde_root" action="action_course_registration" sequence="1"/>
 
 </odoo>

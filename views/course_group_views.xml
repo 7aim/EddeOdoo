@@ -28,6 +28,11 @@
                     </group>
                     <notebook>
                         <page string="Qrup Üzvləri">
+                            <div class="row">
+                                <div class="col-6">
+                                    <!-- Burada əlavə düymələr ola bilər -->
+                                </div>
+                            </div>
                             <field name="member_ids">
                                 <list string="Qrup Üzvləri" create="true" editable="bottom">
                                     <field name="student_name"/>
@@ -38,6 +43,13 @@
                                     <field name="status"/>
                                 </list>
                             </field>
+                            <div class="col-6">
+                                <div class="alert alert-info">
+                                    <strong>Üzv Statistikası:</strong><br/>
+                                    Aktiv üzv sayı: <field name="active_member_count" readonly="1" nolabel="1"/><br/>
+                                    Ümumi aylıq ödəniş: <field name="total_monthly_payment" readonly="1" nolabel="1" widget="monetary"/>
+                                </div>
+                            </div>        
                         </page>
                         <page string="Qrup Qrafiki">
                             <field name="schedule_ids">
@@ -132,7 +144,7 @@
         <field name="context">{'default_is_active': True}</field>
     </record>
 
-    <menuitem id="menu_course_groups" name="Qruplar" parent="menu_edde_root" 
+    <menuitem id="menu_course_groups" name="👥 Qruplar" parent="menu_edde_root" 
               action="action_course_group" sequence="2"/>
 
     <!-- Course Group Lesson Day Form View -->
@@ -229,5 +241,94 @@
             </form>
         </field>
     </record>
+
+    <!-- Course Group Lesson Day Calendar View -->
+    <record id="view_course_group_lesson_day_calendar" model="ir.ui.view">
+        <field name="name">course.group.lesson.day.calendar</field>
+        <field name="model">course.group.lesson.day</field>
+        <field name="arch" type="xml">
+            <calendar string="Dərs Təqvimi" 
+                      date_start="lesson_date" 
+                      color="group_id"
+                      quick_create="false"
+                      create="false">
+                <field name="group_id"/>
+                <field name="teacher_id"/>
+                <field name="status"/>
+                <field name="start_time"/>
+                <field name="end_time"/>
+                <field name="day_of_week"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- Course Group Lesson Day List View for Calendar -->
+    <record id="view_course_group_lesson_day_list_calendar" model="ir.ui.view">
+        <field name="name">course.group.lesson.day.list.calendar</field>
+        <field name="model">course.group.lesson.day</field>
+        <field name="arch" type="xml">
+            <list string="Dərs Günləri" create="false" edit="false">
+                <field name="lesson_date"/>
+                <field name="group_id"/>
+                <field name="day_of_week"/>
+                <field name="start_time" widget="float_time"/>
+                <field name="end_time" widget="float_time"/>
+                <field name="teacher_id"/>
+                <field name="status"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Course Group Lesson Day Search View -->
+    <record id="view_course_group_lesson_day_search" model="ir.ui.view">
+        <field name="name">course.group.lesson.day.search</field>
+        <field name="model">course.group.lesson.day</field>
+        <field name="arch" type="xml">
+            <search string="Dərs Günləri Axtar">
+                <field name="group_id" string="Qrup"/>
+                <field name="teacher_id" string="Müəllim"/>
+                <field name="lesson_date" string="Tarix"/>
+                
+                <filter string="Bu gün" name="today" domain="[('lesson_date', '=', context_today())]"/>
+                <filter string="Bu həftə" name="this_week" domain="[('lesson_date', '&gt;=', (context_today() - relativedelta(days=7)))]"/>
+                <filter string="Bu ay" name="this_month" domain="[('lesson_date', '&gt;=', (context_today() - relativedelta(months=1)))]"/>
+                <separator/>
+                <filter string="Planlaşdırılmış" name="scheduled" domain="[('status', '=', 'scheduled')]"/>
+                <filter string="Keçirilmiş" name="completed" domain="[('status', '=', 'completed')]"/>
+                <filter string="Müəllimi olan" name="with_teacher" domain="[('teacher_id', '!=', False)]"/>
+                
+                <group expand="1" string="Qruplaşdır">
+                    <filter string="Qrup" name="group_by_group" context="{'group_by': 'group_id'}"/>
+                    <filter string="Müəllim" name="group_by_teacher" context="{'group_by': 'teacher_id'}"/>
+                    <filter string="Status" name="group_by_status" context="{'group_by': 'status'}"/>
+                    <filter string="Həftənin günü" name="group_by_day" context="{'group_by': 'day_of_week'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Course Lesson Calendar Action -->
+    <record id="action_course_lesson_calendar" model="ir.actions.act_window">
+        <field name="name">Dərs Təqvimi</field>
+        <field name="res_model">course.group.lesson.day</field>
+        <field name="view_mode">calendar,list</field>
+        <field name="search_view_id" ref="view_course_group_lesson_day_search"/>
+        <field name="context">{'search_default_this_week': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Dərs təqvimi
+            </p>
+            <p>
+                Bu səhifədə bütün qrupların dərs günlərini təqvim formatında görə bilərsiniz.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item for Course Lesson Calendar -->
+    <menuitem id="menu_course_lesson_calendar"
+              name="📅 Dərs Təqvimi"
+              parent="menu_edde_root"
+              action="action_course_lesson_calendar"
+              sequence="15"/>
 
 </odoo>

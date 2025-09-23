@@ -138,7 +138,7 @@
     </record>
     
     <!-- Menu Items -->
-    <menuitem id="menu_course_configuration" name="Konfiqurasiya" parent="menu_edde_root" sequence="100"/>
+    <menuitem id="menu_course_configuration" name="⚙️ Konfiqurasiya" parent="menu_edde_root" sequence="100"/>
     <menuitem id="menu_course_program" name="Programlar" parent="menu_course_configuration" action="action_course_program" sequence="10"/>
     <menuitem id="menu_course_country" name="Ölkələr" parent="menu_course_configuration" action="action_course_country" sequence="15"/>
     <menuitem id="menu_course_course" name="Kurslar" parent="menu_course_configuration" action="action_course_course" sequence="20"/>
