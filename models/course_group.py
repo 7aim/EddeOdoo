@@ -49,10 +49,15 @@ class CourseGroup(models.Model):
     # Qeydlər
     notes = fields.Text(string="Qeydlər")
 
-    @api.depends('number_of_weeks', 'start_date')
+    @api.depends('lesson_day_ids', 'lesson_day_ids.lesson_date')
     def _compute_end_date(self):
         for group in self:
-            if group.start_date:
+            if group.lesson_day_ids:
+                # Son dərs tarixini tap
+                last_lesson_date = max(group.lesson_day_ids.mapped('lesson_date'))
+                group.end_date = last_lesson_date
+            elif group.start_date and group.number_of_weeks:
+                # Əgər dərs günləri yoxdursa, həftə sayına görə hesabla
                 group.end_date = group.start_date + timedelta(weeks=group.number_of_weeks)
             else:
                 group.end_date = False
@@ -87,9 +92,10 @@ class CourseGroup(models.Model):
         
         lesson_vals = []
         current_date = self.start_date
-        end_date = self.end_date
+        # Bitme tarixini həftə sayına görə hesabla (dərs günləri hələ yaradılmayıb)
+        planned_end_date = self.start_date + timedelta(weeks=self.number_of_weeks)
         
-        while current_date <= end_date:
+        while current_date <= planned_end_date:
             day_of_week = str(current_date.weekday())
             
             # Bu günə aid qrafik var mı?
@@ -111,6 +117,7 @@ class CourseGroup(models.Model):
         
         if lesson_vals:
             self.env['course.group.lesson.day'].create(lesson_vals)
+            # Dərs günləri yaradıldıqdan sonra end_date avtomatik yenilənəcək
     
     @api.onchange('start_date', 'number_of_weeks', 'schedule_ids')
     def _onchange_schedule_data(self):
@@ -242,14 +249,25 @@ class CourseGroupLessonDay(models.Model):
             if lesson.lesson_date:
                 lesson.day_of_week = str(lesson.lesson_date.weekday())
     
-    @api.depends('group_id', 'lesson_date', 'start_time', 'end_time')
+    @api.depends('group_id', 'start_time', 'end_time', 'status')
     def _compute_display_name(self):
         for lesson in self:
-            if lesson.group_id and lesson.lesson_date:
+            if lesson.group_id:
+                # Saatları format et
                 start = f"{int(lesson.start_time):02d}:{int((lesson.start_time % 1) * 60):02d}" if lesson.start_time else ""
                 end = f"{int(lesson.end_time):02d}:{int((lesson.end_time % 1) * 60):02d}" if lesson.end_time else ""
-                time_range = f" ({start}-{end})" if start and end else ""
-                lesson.display_name = f"{lesson.group_id.name} - {lesson.lesson_date}{time_range}"
+                time_range = f"({start}-{end})" if start and end else ""
+                
+                # Status tərcüməsi
+                status_dict = {
+                    'scheduled': 'Planlaşdırılıb',
+                    'completed': 'Keçirilib', 
+                    'cancelled': 'Ləğv edilib'
+                }
+                status_text = status_dict.get(lesson.status, lesson.status or '')
+                
+                # Format: "Qrup adı (saat) - Status"
+                lesson.display_name = f"{lesson.group_id.name} {time_range} - {status_text}"
             else:
                 lesson.display_name = "Yeni Dərs"
     
