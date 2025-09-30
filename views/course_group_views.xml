@@ -248,7 +248,8 @@
         <field name="model">course.group.lesson.day</field>
         <field name="arch" type="xml">
             <calendar string="Dərs Təqvimi" 
-                      date_start="lesson_date" 
+                      date_start="datetime_start"
+                      date_stop="datetime_end" 
                       color="group_id"
                       quick_create="false"
                       create="false">
@@ -338,7 +339,7 @@
         <field name="name">course.group.member.pivot.revenue</field>
         <field name="model">course.group.member</field>
         <field name="arch" type="xml">
-            <pivot string="Qrup Gəlir Hesabatı" disable_linking="True">
+            <pivot string="Qrup Gəlir Hesabatı">
                 <field name="group_id" type="row"/>
                 <field name="status" type="col"/>
                 <field name="monthly_payment" type="measure"/>
@@ -399,7 +400,7 @@
         <field name="name">course.group.lesson.day.pivot.teacher</field>
         <field name="model">course.group.lesson.day</field>
         <field name="arch" type="xml">
-            <pivot string="Müəllim Devamiyyət Hesabatı" disable_linking="True">
+            <pivot string="Müəllim Devamiyyət Hesabatı">
                 <field name="teacher_id" type="row"/>
                 <field name="lesson_date" type="col" interval="month"/>
             </pivot>
@@ -472,5 +473,79 @@
               parent="menu_reports"
               action="action_teacher_attendance_report"
               sequence="20"/>
+
+    <!-- 3. TƏLƏBƏ DEVAMIYYƏT HESABATI -->
+    <record id="view_course_attendance_pivot_student" model="ir.ui.view">
+        <field name="name">course.lesson.attendance.pivot.student</field>
+        <field name="model">course.lesson.attendance</field>
+        <field name="arch" type="xml">
+            <pivot string="Tələbə Devamiyyət Hesabatı">
+                <field name="student_name" type="row"/>
+                <field name="lesson_date" type="col" interval="month"/>
+                <field name="present_count" type="measure"/>
+                <field name="absent_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_course_attendance_graph_student" model="ir.ui.view">
+        <field name="name">course.lesson.attendance.graph.student</field>
+        <field name="model">course.lesson.attendance</field>
+        <field name="arch" type="xml">
+            <graph string="Tələbə Devamiyyət Qrafiki" type="bar">
+                <field name="student_name" type="row"/>
+                <field name="present_count" type="measure"/>
+                <field name="absent_count" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_course_attendance_search_student" model="ir.ui.view">
+        <field name="name">course.lesson.attendance.search.student</field>
+        <field name="model">course.lesson.attendance</field>
+        <field name="arch" type="xml">
+            <search string="Tələbə Devamiyyət Hesabatı">
+                <field name="student_name" string="Tələbə"/>
+                <field name="lesson_date" string="Dərs Tarixi"/>
+                <field name="group_id" string="Qrup"/>
+                <field name="lesson_day_id" string="Dərs Günü"/>
+                <field name="student_id" string="Qrup Üzvü"/>
+                
+                <filter string="İştirak Edənlər" name="present_students" domain="[('is_present', '=', True)]"/>
+                <filter string="İştirak Etməyənlər" name="absent_students" domain="[('is_present', '=', False)]"/>
+                <filter string="Keçirilmiş Dərslər" name="completed_lessons" domain="[('lesson_day_id.status', '=', 'completed')]"/>
+                <filter string="Bu Ay" name="this_month" domain="[('lesson_date', '&gt;=', (context_today() - 30))]"/>
+                
+                <group expand="1" string="Qruplaşdır">
+                    <filter string="Tələbə" name="group_by_student" context="{'group_by': 'student_name'}"/>
+                    <filter string="Ay" name="group_by_month" context="{'group_by': 'lesson_date:month'}"/>
+                    <filter string="İştirak Statusu" name="group_by_presence" context="{'group_by': 'is_present'}"/>
+                    <filter string="Qrup" name="group_by_group" context="{'group_by': 'group_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_student_attendance_report" model="ir.actions.act_window">
+        <field name="name">🎓 Tələbə Devamiyyəti</field>
+        <field name="res_model">course.lesson.attendance</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="search_view_id" ref="view_course_attendance_search_student"/>
+        <field name="context">{'search_default_completed_lessons': 1, 'search_default_group_by_student': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Tələbə devamiyyət hesabatı
+            </p>
+            <p>
+                Bu hesabatda tələbələrin dərs devamiyyətini pivot cədvəl və qrafik formatında görə bilərsiniz.
+            </p>
+        </field>
+    </record>
+    
+    <menuitem id="menu_student_attendance_report"
+              name="🎓 Tələbə Devamiyyəti"
+              parent="menu_reports"
+              action="action_student_attendance_report"
+              sequence="30"/>
 
 </odoo>

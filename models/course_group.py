@@ -84,15 +84,16 @@ class CourseGroup(models.Model):
         """Həftəlik qrafikə və həftə sayına əsasən dərs günlərini yaradır"""
         self.ensure_one()
         
-        # Mövcud dərs günlərini sil
-        self.lesson_day_ids.unlink()
+        # Köhnə sistemi qoru amma sadələşdir
+        # Yalnız "scheduled" statusu olan köhnə dərsləri sil
+        old_scheduled_lessons = self.lesson_day_ids.filtered(lambda l: l.status == 'scheduled')
+        old_scheduled_lessons.unlink()
         
         if not self.start_date or not self.number_of_weeks or not self.schedule_ids:
             return
         
         lesson_vals = []
         current_date = self.start_date
-        # Bitme tarixini həftə sayına görə hesabla (dərs günləri hələ yaradılmayıb)
         planned_end_date = self.start_date + timedelta(weeks=self.number_of_weeks)
         
         while current_date <= planned_end_date:
@@ -115,9 +116,36 @@ class CourseGroup(models.Model):
             
             current_date += timedelta(days=1)
         
+        # Yeni dərs günləri yarat
         if lesson_vals:
-            self.env['course.group.lesson.day'].create(lesson_vals)
-            # Dərs günləri yaradıldıqdan sonra end_date avtomatik yenilənəcək
+            new_lessons = self.env['course.group.lesson.day'].create(lesson_vals)
+            
+            # Yeni yaradılan dərs günləri üçün avtomatik devamiyyət yarat
+            self._create_attendance_for_new_lessons(new_lessons)
+    
+    def _create_attendance_for_new_lessons(self, lesson_days):
+        """Yeni yaradılmış dərs günləri üçün aktiv üzvlərə devamiyyət yarat"""
+        self.ensure_one()
+        
+        active_members = self.member_ids.filtered(lambda m: m.status == 'active')
+        attendance_vals = []
+        
+        for lesson_day in lesson_days:
+            for member in active_members:
+                # Yalnız üzvün başlama tarixindən sonrakı dərslər
+                if lesson_day.lesson_date >= member.join_date:
+                    # End date varsa və ötübse devamiyyət yaratma
+                    if member.end_date and lesson_day.lesson_date > member.end_date:
+                        continue
+                        
+                    attendance_vals.append({
+                        'lesson_day_id': lesson_day.id,
+                        'student_id': member.id,
+                        'is_present': True
+                    })
+        
+        if attendance_vals:
+            self.env['course.lesson.attendance'].create(attendance_vals)
     
     @api.onchange('start_date', 'number_of_weeks', 'schedule_ids')
     def _onchange_schedule_data(self):
@@ -134,7 +162,7 @@ class CourseGroup(models.Model):
             'tag': 'display_notification',
             'params': {
                 'title': 'Uğurlu',
-                'message': 'Dərs günləri uğurla yaradıldı.',
+                'message': 'Dərs günləri yeniləndi. Mövcud statuslar və devamiyyət qorundu.',
                 'type': 'success',
             }
         }
@@ -228,6 +256,10 @@ class CourseGroupLessonDay(models.Model):
     start_time = fields.Float(string="Başlama Vaxtı")
     end_time = fields.Float(string="Bitmə Vaxtı")
     
+    # Calendar view üçün datetime sahələri
+    datetime_start = fields.Datetime(string="Başlama Datetime", compute='_compute_datetime_fields', store=True)
+    datetime_end = fields.Datetime(string="Bitmə Datetime", compute='_compute_datetime_fields', store=True)
+    
     # Müəllim
     teacher_id = fields.Many2one('res.partner', string="Müəllim", domain=[('is_teacher', '=', True)])
     
@@ -248,6 +280,35 @@ class CourseGroupLessonDay(models.Model):
         for lesson in self:
             if lesson.lesson_date:
                 lesson.day_of_week = str(lesson.lesson_date.weekday())
+    
+    @api.depends('lesson_date', 'start_time', 'end_time')
+    def _compute_datetime_fields(self):
+        for lesson in self:
+            if lesson.lesson_date and lesson.start_time is not False:
+                # Float time-ı saat və dəqiqəyə çevir
+                hours = int(lesson.start_time)
+                minutes = int((lesson.start_time % 1) * 60)
+                
+                # Date və time-ı birləşdirərək datetime yarat
+                from datetime import datetime, time
+                lesson.datetime_start = datetime.combine(
+                    lesson.lesson_date, 
+                    time(hours, minutes)
+                )
+                
+                if lesson.end_time is not False:
+                    end_hours = int(lesson.end_time)
+                    end_minutes = int((lesson.end_time % 1) * 60)
+                    lesson.datetime_end = datetime.combine(
+                        lesson.lesson_date,
+                        time(end_hours, end_minutes)
+                    )
+                else:
+                    # Əgər bitmə vaxtı yoxdursa, 1 saat əlavə et
+                    lesson.datetime_end = lesson.datetime_start + timedelta(hours=1)
+            else:
+                lesson.datetime_start = False
+                lesson.datetime_end = False
     
     @api.depends('group_id', 'start_time', 'end_time', 'status')
     def _compute_display_name(self):
