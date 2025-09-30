@@ -84,11 +84,37 @@
         </field>
     </record>
 
+    <!-- Payment Pivot View -->
+    <record id="view_group_member_payment_pivot" model="ir.ui.view">
+        <field name="name">group.member.payment.pivot</field>
+        <field name="model">group.member.payment</field>
+        <field name="arch" type="xml">
+            <pivot string="Ödəniş Hesabatı">
+                <field name="group_name" type="row"/>
+                <field name="student_name" type="row"/>
+                <field name="payment_date" type="col" interval="month"/>
+                <field name="amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Payment Graph View -->
+    <record id="view_group_member_payment_graph" model="ir.ui.view">
+        <field name="name">group.member.payment.graph</field>
+        <field name="model">group.member.payment</field>
+        <field name="arch" type="xml">
+            <graph string="Ödəniş Qrafikı" type="bar">
+                <field name="payment_date" interval="month"/>
+                <field name="amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
     <!-- Payment Action -->
     <record id="action_group_member_payment" model="ir.actions.act_window">
         <field name="name">💰 Ödənişlər</field>
         <field name="res_model">group.member.payment</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">list,form,pivot,graph</field>
         <field name="search_view_id" ref="view_group_member_payment_search"/>
         <field name="context">{'search_default_confirmed': 1, 'search_default_this_month': 1}</field>
         <field name="help" type="html">
@@ -101,11 +127,34 @@
         </field>
     </record>
 
-    <!-- Menu Item -->
+    <!-- Payment Report Action -->
+    <record id="action_payment_report" model="ir.actions.act_window">
+        <field name="name">📊 Ödəniş Hesabatı</field>
+        <field name="res_model">group.member.payment</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="search_view_id" ref="view_group_member_payment_search"/>
+        <field name="context">{'search_default_confirmed': 1, 'search_default_group_by_student': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Ödəniş hesabatı
+            </p>
+            <p>
+                Bu hesabatda tələbələrin ödənişlərini pivot cədvəl və qrafik formatında görə bilərsiniz.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Items -->
     <menuitem id="menu_group_member_payment"
               name="💰 Ödənişlər"
               parent="menu_edde_root"
               action="action_group_member_payment"
               sequence="25"/>
+
+    <menuitem id="menu_payment_report"
+              name="📊 Ödəniş Hesabatı"
+              parent="menu_reports"
+              action="action_payment_report"
+              sequence="20"/>
 
 </odoo>

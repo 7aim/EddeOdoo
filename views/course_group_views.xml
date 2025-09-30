@@ -341,68 +341,7 @@
 
     <!-- ================ HESABATLAR ================ -->
     
-    <!-- 1. GELİR HESABATI - Qrup Üzvlərindən -->
-    <record id="view_course_group_member_pivot_revenue" model="ir.ui.view">
-        <field name="name">course.group.member.pivot.revenue</field>
-        <field name="model">course.group.member</field>
-        <field name="arch" type="xml">
-            <pivot string="Qrup Gəlir Hesabatı">
-                <field name="group_id" type="row"/>
-                <field name="status" type="col"/>
-                <field name="monthly_payment" type="measure"/>
-            </pivot>
-        </field>
-    </record>
-
-    <record id="view_course_group_member_search_revenue" model="ir.ui.view">
-        <field name="name">course.group.member.search.revenue</field>
-        <field name="model">course.group.member</field>
-        <field name="arch" type="xml">
-            <search string="Gəlir Hesabatı">
-                <field name="group_id" string="Qrup"/>
-                <field name="student_name" string="Tələbə"/>
-                <field name="status" string="Status"/>
-                
-                <filter string="Aktiv Üzvlər" name="active_members" domain="[('status', '=', 'active')]"/>
-                <filter string="Passiv Üzvlər" name="inactive_members" domain="[('status', '=', 'inactive')]"/>
-                
-                <group expand="1" string="Qruplaşdır">
-                    <filter string="Qrup" name="group_by_group" context="{'group_by': 'group_id'}"/>
-                    <filter string="Status" name="group_by_status" context="{'group_by': 'status'}"/>
-                    <filter string="Başlama Ayı" name="group_by_join_month" context="{'group_by': 'join_date:month'}"/>
-                </group>
-            </search>
-        </field>
-    </record>
-
-    <record id="view_course_group_member_graph_revenue" model="ir.ui.view">
-        <field name="name">course.group.member.graph.revenue</field>
-        <field name="model">course.group.member</field>
-        <field name="arch" type="xml">
-            <graph string="Gəlir Qrafiki" type="bar">
-                <field name="group_id" type="row"/>
-                <field name="monthly_payment" type="measure"/>
-            </graph>
-        </field>
-    </record>
-
-    <record id="action_revenue_report" model="ir.actions.act_window">
-        <field name="name">💰 Gəlir Hesabatı</field>
-        <field name="res_model">course.group.member</field>
-        <field name="view_mode">pivot,graph,list</field>
-        <field name="search_view_id" ref="view_course_group_member_search_revenue"/>
-        <field name="context">{'search_default_active_members': 1, 'search_default_group_by_group': 1}</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Gəlir hesabatı
-            </p>
-            <p>
-                Bu hesabatda qruplardan əldə edilən gəlirləri pivot cədvəl və qrafik formatında görə bilərsiniz.
-            </p>
-        </field>
-    </record>
-
-    <!-- 2. MÜƏLLİM DEVAMIYYƏT HESABATI -->
+    <!-- MÜƏLLİM DEVAMIYYƏT HESABATI -->
     <record id="view_course_lesson_day_pivot_teacher" model="ir.ui.view">
         <field name="name">course.group.lesson.day.pivot.teacher</field>
         <field name="model">course.group.lesson.day</field>
@@ -469,17 +408,11 @@
               parent="menu_edde_root" 
               sequence="50"/>
               
-    <menuitem id="menu_revenue_report"
-              name="💰 Gəlir Hesabatı"
-              parent="menu_reports"
-              action="action_revenue_report"
-              sequence="10"/>
-              
     <menuitem id="menu_teacher_attendance_report"
               name="👨‍🏫 Müəllim Devamiyyəti"
               parent="menu_reports"
               action="action_teacher_attendance_report"
-              sequence="20"/>
+              sequence="25"/>
 
     <!-- 3. TƏLƏBƏ DEVAMIYYƏT HESABATI -->
     <record id="view_course_attendance_pivot_student" model="ir.ui.view">
