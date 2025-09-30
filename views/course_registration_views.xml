@@ -129,7 +129,8 @@
                             <div class="o_kanban_card_content">
                                 <div class="oe_kanban_details">
                                     <div class="o_kanban_record_subtitle">
-                                        <field name="program"/> - <field name="course"/>
+                                        <field name="program"/>
+                                        <field name="course"/>
                                     </div>
                                     <div class="o_kanban_record_body">
                                         <field name="phone"/> <br/>
