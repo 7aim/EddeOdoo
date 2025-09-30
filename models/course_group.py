@@ -154,6 +154,90 @@ class CourseGroup(models.Model):
             # Bu onchange-də dəyişiklik etmirik, sadəcə məlumat veririk
             pass
     
+    def write(self, vals):
+        """Qrafik dəyişəndə avtomatik dərs günlərini yenilə"""
+        res = super().write(vals)
+        
+        # Əgər kritik sahələr dəyişibsə, dərs günlərini yenilə
+        schedule_changed = any(key in vals for key in ['start_date', 'number_of_weeks'])
+        
+        if schedule_changed:
+            for group in self:
+                if group.start_date and group.number_of_weeks and group.schedule_ids:
+                    group._smart_update_lesson_days()
+        
+        return res
+    
+    def _smart_update_lesson_days(self):
+        """Ağıllı dərs günü yenilənməsi - mövcud saatları yenilə, yeni günlər əlavə et"""
+        self.ensure_one()
+        
+        # 1. Mövcud scheduled dərslərin saatlarını yenilə
+        self._update_existing_lesson_times()
+        
+        # 2. Çatmayan dərs günlərini əlavə et
+        self._add_missing_lesson_days()
+    
+    def _update_existing_lesson_times(self):
+        """Mövcud scheduled dərslərin saatlarını qrafikə uyğun yenilə"""
+        scheduled_lessons = self.lesson_day_ids.filtered(lambda l: l.status == 'scheduled')
+        
+        for lesson in scheduled_lessons:
+            day_of_week = str(lesson.lesson_date.weekday())
+            matching_schedule = self.schedule_ids.filtered(
+                lambda s: s.day_of_week == day_of_week and s.is_active
+            )
+            
+            if matching_schedule:
+                # İlk uyğun qrafik götür
+                schedule = matching_schedule[0]
+                lesson.write({
+                    'start_time': schedule.start_time,
+                    'end_time': schedule.end_time,
+                    'teacher_id': self.teacher_id.id if self.teacher_id else False
+                })
+    
+    def _add_missing_lesson_days(self):
+        """Çatmayan dərs günlərini əlavə et"""
+        if not self.start_date or not self.number_of_weeks or not self.schedule_ids:
+            return
+        
+        # Mövcud dərs tarixlərini al
+        existing_dates = set(self.lesson_day_ids.mapped('lesson_date'))
+        
+        # Planlaşdırılan tarixləri hesabla
+        planned_dates = set()
+        current_date = self.start_date
+        planned_end_date = self.start_date + timedelta(weeks=self.number_of_weeks)
+        
+        while current_date <= planned_end_date:
+            day_of_week = str(current_date.weekday())
+            if self.schedule_ids.filtered(lambda s: s.day_of_week == day_of_week and s.is_active):
+                planned_dates.add(current_date)
+            current_date += timedelta(days=1)
+        
+        # Çatmayan tarixlər üçün dərs günləri yarat
+        missing_dates = planned_dates - existing_dates
+        
+        lesson_vals = []
+        for date in missing_dates:
+            day_of_week = str(date.weekday())
+            schedules = self.schedule_ids.filtered(lambda s: s.day_of_week == day_of_week and s.is_active)
+            
+            for schedule in schedules:
+                lesson_vals.append({
+                    'group_id': self.id,
+                    'lesson_date': date,
+                    'start_time': schedule.start_time,
+                    'end_time': schedule.end_time,
+                    'teacher_id': self.teacher_id.id if self.teacher_id else False,
+                    'status': 'scheduled'
+                })
+        
+        if lesson_vals:
+            new_lessons = self.env['course.group.lesson.day'].create(lesson_vals)
+            self._create_attendance_for_new_lessons(new_lessons)
+    
     def action_generate_lesson_days(self):
         """Dərs günlərini yaratmaq üçün button action"""
         self.generate_lesson_days()
@@ -232,6 +316,20 @@ class CourseGroupSchedule(models.Model):
                 raise ValidationError("Başlama vaxtı 0-24 aralığında olmalıdır!")
             if schedule.end_time < 0 or schedule.end_time > 24:
                 raise ValidationError("Bitmə vaxtı 0-24 aralığında olmalıdır!")
+    
+    def write(self, vals):
+        """Qrafik dəyişəndə uyğun dərs günlərini yenilə"""
+        res = super().write(vals)
+        
+        # Əgər vaxt dəyişibsə, qrupun dərs günlərini yenilə
+        time_changed = any(key in vals for key in ['start_time', 'end_time', 'is_active'])
+        
+        if time_changed:
+            for schedule in self:
+                if schedule.group_id:
+                    schedule.group_id._update_existing_lesson_times()
+        
+        return res
 
 
 class CourseGroupLessonDay(models.Model):

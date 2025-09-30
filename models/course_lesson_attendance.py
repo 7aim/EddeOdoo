@@ -60,15 +60,16 @@ class CourseLessonAttendance(models.Model):
 
     @api.constrains('lesson_day_id', 'student_id')
     def _check_unique_attendance(self):
+        # Yalnız create zamanı check et, update zamanı yox
         for record in self:
-            existing = self.search([
-                ('lesson_day_id', '=', record.lesson_day_id.id),
-                ('student_id', '=', record.student_id.id),
-                ('id', '!=', record.id)
-            ])
-            if existing:
-                raise ValidationError(
-                    f"Bu tələbənin ({record.student_name}) "
-                    f"bu dərs günü üçün ({record.lesson_day_id.lesson_date}) "
-                    f"artıq devamiyyət qeydi var!"
-                )
+            if not record.id:  # Yeni qeyd yaradılırsa
+                existing = self.search([
+                    ('lesson_day_id', '=', record.lesson_day_id.id),
+                    ('student_id', '=', record.student_id.id)
+                ])
+                if existing:
+                    raise ValidationError(
+                        f"Bu tələbənin ({record.student_name}) "
+                        f"bu dərs günü üçün ({record.lesson_day_id.lesson_date}) "
+                        f"artıq devamiyyət qeydi var!"
+                    )
