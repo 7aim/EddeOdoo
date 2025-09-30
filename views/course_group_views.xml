@@ -36,11 +36,18 @@
                             <field name="member_ids">
                                 <list string="Qrup Üzvləri" create="true" editable="bottom">
                                     <field name="student_name"/>
-                                    <!--field name="student_id"/-->
-                                    <field name="notes"/>
                                     <field name="join_date"/>
-                                    <field name="monthly_payment"/>
+                                    <field name="payment_plan"/>
+                                    <field name="total_amount"/>
+                                    <field name="paid_amount" readonly="1"/>
+                                    <field name="remaining_amount" readonly="1"/>
+                                    <field name="payment_status" readonly="1"/>
                                     <field name="status"/>
+                                    <button name="action_add_payment" type="object" 
+                                            icon="fa-plus" title="Ödəniş Əlavə Et"
+                                            attrs="{'invisible': [('status', '!=', 'active')]}"/>
+                                    <button name="action_view_payments" type="object" 
+                                            icon="fa-list" title="Ödənişləri Göstər"/>
                                 </list>
                             </field>
                             <div class="col-6">

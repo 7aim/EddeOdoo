@@ -76,9 +76,9 @@
                                 <list string="Qrup Üzvlüyü" editable="bottom">
                                     <field name="group_id" options="{'no_create': True}"/>
                                     <field name="join_date"/>
-                                    <field name="monthly_payment"/>
                                     <field name="status"/>
                                     <field name="notes"/>
+                                    <!--field name="monthly_payment"/-->
                                 </list>
                             </field>
                         </page>

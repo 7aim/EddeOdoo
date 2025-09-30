@@ -18,6 +18,28 @@ class CourseGroupMember(models.Model):
     end_date = fields.Date(string='Bitmə Tarixi', help='Bu üzvün qrupdan çıxma tarixi')
     monthly_payment = fields.Float(string='Ödəniş', help='Bu qrup üçün ödəniş məbləği')
     
+    # Ödəniş sistemi
+    payment_plan = fields.Selection([
+        ('full', 'Tam Ödəniş'),
+        ('partial', 'İlkin + Qalıq'),
+        ('installment', 'Taksit'),
+        ('custom', 'Fərdi Plan')
+    ], string='Ödəniş Planı', default='full')
+    
+    total_amount = fields.Float(string='Ümumi Məbləğ', help='Bu üzv üçün ümumi ödəniş məbləği')
+    paid_amount = fields.Float(string='Ödənilmiş Məbləğ', compute='_compute_payment_status', store=True)
+    remaining_amount = fields.Float(string='Qalan Məbləğ', compute='_compute_payment_status', store=True)
+    
+    payment_status = fields.Selection([
+        ('pending', 'Gözləmədə'),
+        ('partial', 'Qismən Ödənilmiş'),
+        ('paid', 'Tam Ödənilmiş'),
+        ('overpaid', 'Artıq Ödənilmiş')
+    ], string='Ödəniş Vəziyyəti', compute='_compute_payment_status', store=True)
+    
+    # Ödəniş qeydləri
+    payment_ids = fields.One2many('group.member.payment', 'member_id', string='Ödəniş Qeydləri')
+    
     # Status
     status = fields.Selection([
         ('active', 'Aktiv'),
@@ -137,3 +159,55 @@ class CourseGroupMember(models.Model):
         
         if attendances_to_remove:
             attendances_to_remove.unlink()
+    
+    @api.depends('payment_ids', 'payment_ids.amount', 'payment_ids.is_confirmed', 'total_amount')
+    def _compute_payment_status(self):
+        for member in self:
+            # Təsdiqlənmiş ödənişlərin cəmini hesabla
+            confirmed_payments = member.payment_ids.filtered('is_confirmed')
+            member.paid_amount = sum(confirmed_payments.mapped('amount'))
+            
+            # Qalan məbləği hesabla
+            member.remaining_amount = member.total_amount - member.paid_amount
+            
+            # Ödəniş statusunu təyin et
+            if member.total_amount <= 0:
+                member.payment_status = 'pending'
+            elif member.paid_amount <= 0:
+                member.payment_status = 'pending'
+            elif member.paid_amount >= member.total_amount:
+                if member.paid_amount > member.total_amount:
+                    member.payment_status = 'overpaid'
+                else:
+                    member.payment_status = 'paid'
+            else:
+                member.payment_status = 'partial'
+    
+    def _update_payment_status(self):
+        """Ödəniş statusunu yenilə - payment model tərəfindən çağırılır"""
+        self._compute_payment_status()
+    
+    def action_add_payment(self):
+        """Yeni ödəniş əlavə etmək üçün wizard açar"""
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Ödəniş Əlavə Et',
+            'res_model': 'group.member.payment',
+            'view_mode': 'form',
+            'context': {
+                'default_member_id': self.id,
+                'default_payment_type': 'installment' if self.payment_plan == 'installment' else 'full'
+            },
+            'target': 'new'
+        }
+    
+    def action_view_payments(self):
+        """Bu üzvün bütün ödənişlərini göstər"""
+        return {
+            'type': 'ir.actions.act_window',
+            'name': f'{self.student_name.display_name} - Ödənişlər',
+            'res_model': 'group.member.payment',
+            'view_mode': 'list,form',
+            'domain': [('member_id', '=', self.id)],
+            'context': {'default_member_id': self.id}
+        }

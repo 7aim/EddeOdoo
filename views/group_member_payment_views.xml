@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Group Member Payment Views -->
+    
+    <!-- Payment Form View -->
+    <record id="view_group_member_payment_form" model="ir.ui.view">
+        <field name="name">group.member.payment.form</field>
+        <field name="model">group.member.payment</field>
+        <field name="arch" type="xml">
+            <form string="Ödəniş">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="display_name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="member_id" options="{'no_create': True}"/>
+                            <field name="student_name" readonly="1"/>
+                            <field name="member_total_amount" string="Ümumi Məbləğ"/>
+                            <field name="member_paid_amount" string="Ödənilmiş"/>
+                            <field name="member_remaining_amount" string="Qalıq"/>
+                            <!--field name="group_name" readonly="1"/>-->
+                        </group>
+                        <group>
+                            <field name="payment_date"/>
+                            <field name="amount"/>
+                            <field name="payment_type"/>
+                            <field name="payment_method"/>
+                            <field name="is_confirmed"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="notes" placeholder="Əlavə qeydlər..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Payment List View -->
+    <record id="view_group_member_payment_list" model="ir.ui.view">
+        <field name="name">group.member.payment.list</field>
+        <field name="model">group.member.payment</field>
+        <field name="arch" type="xml">
+            <list string="Ödənişlər" decoration-success="is_confirmed==True" decoration-muted="is_confirmed==False">
+                <field name="payment_date"/>
+                <field name="student_name"/>
+                <field name="group_name"/>
+                <field name="amount" sum="Ümumi"/>
+                <field name="member_total_amount" string="Ümumi Məbləğ"/>
+                <field name="member_paid_amount" string="Ödənilmiş"/>
+                <field name="member_remaining_amount" string="Qalıq"/>
+                <field name="payment_type"/>
+                <field name="payment_method"/>
+                <field name="is_confirmed"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Payment Search View -->
+    <record id="view_group_member_payment_search" model="ir.ui.view">
+        <field name="name">group.member.payment.search</field>
+        <field name="model">group.member.payment</field>
+        <field name="arch" type="xml">
+            <search string="Ödəniş Axtarışı">
+                <field name="student_name"/>
+                <field name="group_name"/>
+                <field name="amount"/>
+                <field name="payment_date"/>
+                
+                <filter string="Təsdiqlənmiş" name="confirmed" domain="[('is_confirmed', '=', True)]"/>
+                <filter string="Təsdiqlənməmiş" name="unconfirmed" domain="[('is_confirmed', '=', False)]"/>
+                <filter string="Bu Ay" name="this_month" domain="[('payment_date', '&gt;=', '2025-09-01')]"/>
+                
+                <group expand="1" string="Qruplaşdır">
+                    <filter string="Tələbə" name="group_by_student" context="{'group_by': 'student_name'}"/>
+                    <filter string="Qrup" name="group_by_group" context="{'group_by': 'group_name'}"/>
+                    <filter string="Ödəniş Tipi" name="group_by_type" context="{'group_by': 'payment_type'}"/>
+                    <filter string="Ay" name="group_by_month" context="{'group_by': 'payment_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Payment Action -->
+    <record id="action_group_member_payment" model="ir.actions.act_window">
+        <field name="name">💰 Ödənişlər</field>
+        <field name="res_model">group.member.payment</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_group_member_payment_search"/>
+        <field name="context">{'search_default_confirmed': 1, 'search_default_this_month': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                İlk ödənişi yaradın
+            </p>
+            <p>
+                Bu səhifədə bütün tələbələrin ödənişlərini görə və idarə edə bilərsiniz.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item -->
+    <menuitem id="menu_group_member_payment"
+              name="💰 Ödənişlər"
+              parent="menu_edde_root"
+              action="action_group_member_payment"
+              sequence="25"/>
+
+</odoo>
