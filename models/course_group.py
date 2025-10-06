@@ -49,7 +49,7 @@ class CourseGroup(models.Model):
     # Qeydlər
     notes = fields.Text(string="Qeydlər")
 
-    @api.depends('lesson_day_ids', 'lesson_day_ids.lesson_date')
+    @api.depends('lesson_day_ids', 'lesson_day_ids.lesson_date', 'start_date', 'number_of_weeks')
     def _compute_end_date(self):
         for group in self:
             if group.lesson_day_ids:
@@ -73,12 +73,12 @@ class CourseGroup(models.Model):
             group.lesson_day_count = len(group.lesson_day_ids)
             group.lessons_with_teacher_count = len(group.lesson_day_ids.filtered('teacher_id'))
     
-    @api.depends('member_ids', 'member_ids.status', 'member_ids.monthly_payment')
+    @api.depends('member_ids', 'member_ids.status', 'member_ids.total_amount')
     def _compute_member_stats(self):
         for group in self:
             active_members = group.member_ids.filtered(lambda m: m.status == 'active')
             group.active_member_count = len(active_members)
-            group.total_monthly_payment = sum(active_members.mapped('monthly_payment'))
+            group.total_monthly_payment = sum(active_members.mapped('total_amount'))
     
     def generate_lesson_days(self):
         """Həftəlik qrafikə və həftə sayına əsasən dərs günlərini yaradır"""

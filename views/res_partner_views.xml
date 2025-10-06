@@ -61,4 +61,44 @@
             </xpath>
         </field>
     </record>
+
+    <!-- Teacher Action -->
+    <record id="action_teachers" model="ir.actions.act_window">
+        <field name="name">👨‍🏫 Müəllimlər</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('is_teacher', '=', True)]</field>
+        <field name="context">{'default_is_teacher': True, 'default_is_company': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                İlk müəllimi əlavə edin
+            </p>
+            <p>
+                Bu bölmədə müəllimləri idarə edə bilərsiniz.
+            </p>
+        </field>
+    </record>
+
+    <!-- Contacts (Non-Teachers) Action -->
+    <record id="action_contacts" model="ir.actions.act_window">
+        <field name="name">📞 Kontaktlar</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('is_teacher', '=', False)]</field>
+        <field name="context">{'default_is_teacher': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                İlk kontaktı əlavə edin
+            </p>
+            <p>
+                Bu bölmədə kontaktları idarə edə bilərsiniz.
+            </p>
+        </field>
+    </record>
+
+    <!-- Teachers and Contacts Menus -->
+    <menuitem id="menu_teachers" name="👨‍🏫 Müəllimlər" parent="menu_edde_root" action="action_teachers" sequence="15"/>
+    <menuitem id="menu_contacts" name="📞 Kontaktlar" parent="menu_edde_root" action="action_contacts" sequence="16"/>
+
+
 </odoo>
