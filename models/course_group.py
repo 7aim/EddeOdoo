@@ -466,7 +466,7 @@ class CourseGroupLessonDay(models.Model):
                     attendance_vals.append({
                         'lesson_day_id': self.id,
                         'student_id': member.id,
-                        'is_present': True  # Default olaraq iştirak var
+                        # 'is_present': True  # Default olaraq iştirak var
                     })
         
         if attendance_vals:

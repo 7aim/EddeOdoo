@@ -16,6 +16,7 @@
         'views/course_config_views.xml',
         'views/course_group_views.xml',
         'views/group_member_payment_views.xml',
+        'views/teacher_salary_views.xml',
         'views/res_partner_views.xml',
     ],
     'demo': [],

@@ -3,8 +3,16 @@ from odoo import models, fields, api
 class Partner(models.Model):
     _inherit = 'res.partner'
     
-    # Student related fields
+    # Teacher related fields
     is_teacher = fields.Boolean(string="Müəllim", default=False)
+    salary_type = fields.Selection([
+        ('fixed', 'Sabit Maaş'),
+        ('percentage', 'Faizli Maaş')
+    ], string='Maaş Tipi', default='fixed', help='Müəllimin maaş hesablama üsulu')
+    fixed_salary = fields.Float(string='Sabit Maaş', help='Aylıq sabit maaş məbləği')
+    lesson_rate = fields.Float(string='Dərs Faizi', help='Hər dərs üçün faiz məbləği')
+    
+    # Student related fields
     program_id = fields.Many2many('course.program', string='Program')
     university_id = fields.Many2one('res.partner', string='Universitet')
     student_country_id = fields.Many2one('course.country', string='Ölkə')  # Changed from country_id to avoid conflicts
@@ -43,3 +51,45 @@ class Partner(models.Model):
             'type': 'ir.actions.act_window',
             'target': 'current',
         }
+
+    def action_create_salary(self):
+        """
+        Müəllim üçün maaş yaratma formu aç
+        """
+        self.ensure_one()
+        
+        if not self.is_teacher:
+            raise ValueError("Bu funksiya yalnız müəllimlər üçün mövcuddur!")
+        
+        # Bu ay üçün artıq maaş qeydi varmı yoxla
+        current_month = fields.Date.today().replace(day=1)
+        existing_salary = self.env['teacher.salary'].search([
+            ('teacher_id', '=', self.id),
+            ('salary_month', '=', current_month)
+        ], limit=1)
+        
+        if existing_salary:
+            # Mövcud maaş qeydini aç
+            return {
+                'name': f'{self.name} - Maaş',
+                'view_mode': 'form',
+                'res_model': 'teacher.salary',
+                'res_id': existing_salary.id,
+                'type': 'ir.actions.act_window',
+                'target': 'current',
+            }
+        else:
+            # Yeni maaş qeydi yarat və aç
+            salary = self.env['teacher.salary'].create({
+                'teacher_id': self.id,
+                'salary_month': current_month,
+            })
+            
+            return {
+                'name': f'{self.name} - Yeni Maaş',
+                'view_mode': 'form',
+                'res_model': 'teacher.salary',
+                'res_id': salary.id,
+                'type': 'ir.actions.act_window',
+                'target': 'current',
+            }

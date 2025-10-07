@@ -4,5 +4,6 @@ from . import course_group_member
 from . import group_member_payment
 from . import course_lesson_attendance
 from . import res_partner
+from . import teacher_salary
 from . import course_config
 from . import crm_lead

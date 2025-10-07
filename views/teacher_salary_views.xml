@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Teacher Salary Views -->
+    
+    <!-- Teacher Salary Form View -->
+    <record id="view_teacher_salary_form" model="ir.ui.view">
+        <field name="name">teacher.salary.form</field>
+        <field name="model">teacher.salary</field>
+        <field name="arch" type="xml">
+            <form string="Müəllim Əmək Haqqı">
+                <header>
+                    <button name="action_confirm" type="object" string="Təsdiqlə" 
+                            class="btn-primary" invisible="status != 'draft'"/>
+                    <button name="action_mark_paid" type="object" string="Ödənildi" 
+                            class="btn-success" invisible="status != 'confirmed'"/>
+                    <button name="action_reset_to_draft" type="object" string="Qaralama" 
+                            class="btn-secondary" invisible="status == 'draft'"/>
+                    <field name="status" widget="statusbar" statusbar_visible="draft,confirmed,paid"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="display_name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="teacher_id" options="{'no_create': True}"/>
+                            <field name="salary_month" widget="date" string="Maaş Ayı"/>
+                            <field name="salary_type" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="lesson_count" readonly="1" invisible="salary_type == 'fixed'"/>
+                            <field name="fixed_salary" readonly="1" invisible="salary_type == 'percentage'"/>
+                            <field name="lesson_rate" readonly="1" invisible="salary_type == 'fixed'"/>
+                        </group>
+                    </group>
+                    <group string="💰 Maaş Hesablaması">
+                        <group>
+                            <field name="calculated_salary" readonly="1" string="Hesablanmış Maaş"/>
+                            <field name="bonus" string="Bonus (+)"/>
+                        </group>
+                        <group>
+                            <field name="deduction" string="Tutulan Məbləğ (-)"/>
+                            <field name="final_salary" readonly="1" style="font-weight:bold;font-size:16px;color:#28a745;" string="Son Maaş"/>
+                        </group>
+                    </group>
+                    <group string="📊 Hesablama Məlumatları" invisible="salary_type == 'fixed'">
+                        <div class="alert alert-info">
+                            <strong>📋 Faizli Maaş Hesablaması:</strong><br/>
+                            Bu ayda keçdiyi dərslər: <strong><field name="lesson_count" nolabel="1" readonly="1"/></strong><br/>
+                            Dərs başına məbləğ: <strong><field name="lesson_rate" nolabel="1" readonly="1"/></strong><br/>
+                            Hesablanmış maaş: <strong><field name="lesson_count" nolabel="1" readonly="1"/> × <field name="lesson_rate" nolabel="1" readonly="1"/> = <field name="calculated_salary" nolabel="1" readonly="1"/></strong>
+                        </div>
+                    </group>
+                    <group>
+                        <field name="notes" placeholder="Əlavə qeydlər..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Teacher Salary List View -->
+    <record id="view_teacher_salary_list" model="ir.ui.view">
+        <field name="name">teacher.salary.list</field>
+        <field name="model">teacher.salary</field>
+        <field name="arch" type="xml">
+            <list string="Müəllim Əmək Haqqı" decoration-success="status=='paid'" decoration-info="status=='confirmed'" decoration-muted="status=='draft'">
+                <field name="salary_month"/>
+                <field name="teacher_id"/>
+                <field name="salary_type"/>
+                <field name="lesson_count" string="Dərs Sayı" optional="show"/>
+                <field name="fixed_salary" string="Sabit Maaş" optional="hide"/>
+                <field name="lesson_rate" string="Dərs Faizi" optional="hide"/>
+                <field name="calculated_salary" string="Hesablanmış" sum="Toplam"/>
+                <field name="bonus" sum="Toplam" optional="hide"/>
+                <field name="deduction" sum="Toplam" optional="hide"/>
+                <field name="final_salary" string="Son Maaş" sum="Toplam"/>
+                <field name="status"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Teacher Salary Search View -->
+    <record id="view_teacher_salary_search" model="ir.ui.view">
+        <field name="name">teacher.salary.search</field>
+        <field name="model">teacher.salary</field>
+        <field name="arch" type="xml">
+            <search string="Maaş Axtarışı">
+                <field name="teacher_id"/>
+                <field name="salary_month"/>
+                <field name="final_salary"/>
+                
+                <filter string="Qaralama" name="draft" domain="[('status', '=', 'draft')]"/>
+                <filter string="Təsdiqlənmiş" name="confirmed" domain="[('status', '=', 'confirmed')]"/>
+                <filter string="Ödənilmiş" name="paid" domain="[('status', '=', 'paid')]"/>
+                <separator/>
+                <filter string="Sabit Maaş" name="fixed_salary" domain="[('salary_type', '=', 'fixed')]"/>
+                <filter string="Faizli Maaş" name="percentage_salary" domain="[('salary_type', '=', 'percentage')]"/>
+                <separator/>
+                <filter string="Bu Ay" name="this_month" domain="[('salary_month', '&gt;=', '2025-10-01')]"/>
+                
+                <group expand="1" string="Qruplaşdır">
+                    <filter string="Müəllim" name="group_by_teacher" context="{'group_by': 'teacher_id'}"/>
+                    <filter string="Maaş Tipi" name="group_by_type" context="{'group_by': 'salary_type'}"/>
+                    <filter string="Status" name="group_by_status" context="{'group_by': 'status'}"/>
+                    <filter string="Ay" name="group_by_month" context="{'group_by': 'salary_month:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Teacher Salary Pivot View -->
+    <record id="view_teacher_salary_pivot" model="ir.ui.view">
+        <field name="name">teacher.salary.pivot</field>
+        <field name="model">teacher.salary</field>
+        <field name="arch" type="xml">
+            <pivot string="Maaş Hesabatı">
+                <field name="teacher_id" type="row"/>
+                <field name="salary_month" type="col" interval="month"/>
+                <field name="final_salary" type="measure"/>
+                <field name="lesson_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Teacher Salary Graph View -->
+    <record id="view_teacher_salary_graph" model="ir.ui.view">
+        <field name="name">teacher.salary.graph</field>
+        <field name="model">teacher.salary</field>
+        <field name="arch" type="xml">
+            <graph string="Maaş Qrafikı" type="bar">
+                <field name="teacher_id"/>
+                <field name="final_salary" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Teacher Salary Action -->
+    <record id="action_teacher_salary" model="ir.actions.act_window">
+        <field name="name">💰 Müəllim Əmək Haqqı</field>
+        <field name="res_model">teacher.salary</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_teacher_salary_search"/>
+        <field name="context">{'search_default_this_month': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                İlk maaş qeydini yaradın
+            </p>
+            <p>
+                Müəllimlərin maaşlarını idarə etmək üçün:
+                <br/>• <strong>Müəllimlər</strong> menyusuna gedin
+                <br/>• Müəllimin yanındakı <strong>"💰 Maaş"</strong> düyməsinə klikləyin
+            </p>
+        </field>
+    </record>
+
+    <!-- Teacher Salary Report Action -->
+    <record id="action_teacher_salary_report" model="ir.actions.act_window">
+        <field name="name">📊 Maaş Hesabatı</field>
+        <field name="res_model">teacher.salary</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="search_view_id" ref="view_teacher_salary_search"/>
+        <field name="context">{'search_default_paid': 1, 'search_default_group_by_teacher': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Maaş hesabatı
+            </p>
+            <p>
+                Bu hesabatda müəllimlərin maaşlarını pivot cədvəl və qrafik formatında görə bilərsiniz.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Items -->
+    <menuitem id="menu_teacher_salary"
+              name="💰 Müəllim Maaşları"
+              parent="menu_edde_root"
+              action="action_teacher_salary"
+              sequence="30"/>
+
+    <menuitem id="menu_teacher_salary_report"
+              name="📊 Maaş Hesabatı"
+              parent="menu_reports"
+              action="action_teacher_salary_report"
+              sequence="15"/>
+
+</odoo>

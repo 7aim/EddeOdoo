@@ -16,9 +16,30 @@
                         help="Bu kontaktı tələbə olaraq qeydiyyata al"/>
             </xpath>
             
+            <!-- Add teacher field -->
+            <field name="category_id" position="after">
+                <field name="is_teacher"/>
+            </field>
+            
             <!-- Add student fields in a new page -->
             <page name="internal_notes" position="after">
-                <page string="Tələbə Məlumatları">
+                <page string="👨‍🏫 Müəllim Məlumatları" invisible="is_teacher == 'False'">
+                    <group string="Maaş Parametrləri">
+                        <group>
+                            <field name="salary_type"/>
+                            <field name="fixed_salary" invisible="salary_type != 'fixed'" required="[('is_teacher', '=', True), ('salary_type', '=', 'fixed')]"/>
+                        </group>
+                        <group>
+                            <field name="lesson_rate" invisible="salary_type != 'percentage'" required="[('is_teacher', '=', True), ('salary_type', '=', 'percentage')]"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-info" style="margin: 10px 0;">
+                        <strong>📋 Maaş Tipi Açıqlaması:</strong><br/>
+                        • <strong>Sabit Maaş:</strong> Aylıq sabit məbləğ ödənilir<br/>
+                        • <strong>Faizli Maaş:</strong> Həmin ayda keçdiyi dərs sayı × dərs başına məbləğ
+                    </div>
+                </page>
+                <page string="🎓 Tələbə Məlumatları" invisible="[('is_teacher', '=', True)]">
                     <group>
                         <field name="program_id" widget="many2many_tags"/>
                         <field name="course_id" widget="many2many_tags"/>
@@ -27,7 +48,6 @@
                         <field name="university_id"/>
                         <field name="student_country_id"/>
                         <field name="source_id"/>
-                        <field name="is_teacher"/>
                     </group>
                 </page>
             </page>
@@ -62,11 +82,31 @@
         </field>
     </record>
 
+    <!-- Teacher List View -->
+    <record id="view_teacher_list" model="ir.ui.view">
+        <field name="name">res.partner.teacher.list</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <list string="Müəllimlər">
+                <field name="name"/>
+                <field name="salary_type"/>
+                <field name="fixed_salary" string="Sabit Maaş" optional="show"/>
+                <field name="lesson_rate" string="Dərs Faizi" optional="show"/>
+                <field name="phone"/>
+                <field name="email"/>
+                <button name="action_create_salary" type="object" 
+                        icon="fa-money" title="Maaş Yarat"
+                        string="💰 Maaş"/>
+            </list>
+        </field>
+    </record>
+
     <!-- Teacher Action -->
     <record id="action_teachers" model="ir.actions.act_window">
         <field name="name">👨‍🏫 Müəllimlər</field>
         <field name="res_model">res.partner</field>
         <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_teacher_list"/>
         <field name="domain">[('is_teacher', '=', True)]</field>
         <field name="context">{'default_is_teacher': True, 'default_is_company': False}</field>
         <field name="help" type="html">

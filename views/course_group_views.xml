@@ -45,7 +45,7 @@
                                     <field name="status"/>
                                     <button name="action_add_payment" type="object" 
                                             icon="fa-plus" title="Ödəniş Əlavə Et"
-                                            attrs="{'invisible': [('status', '!=', 'active')]}"/>
+                                            invisible="status != 'active'"/>
                                     <button name="action_view_payments" type="object" 
                                             icon="fa-list" title="Ödənişləri Göstər"/>
                                 </list>
@@ -235,7 +235,7 @@
                                 <list editable="bottom" create="false" delete="false">
                                     <field name="student_name" readonly="1"/>
                                     <field name="is_present" widget="boolean_toggle"/>
-                                    <field name="excuse" attrs="{'readonly': [('is_present', '=', True)]}"/>
+                                    <field name="excuse" readonly="[('is_present', '=', True)]"/>
                                     <field name="notes" placeholder="Əlavə qeydlər"/>
                                 </list>
                             </field>

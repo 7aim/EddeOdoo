@@ -4,6 +4,7 @@ access_edde_course_registration_manager,edde.course.registration.manager,model_e
 access_course_group,course.group,model_course_group,base.group_user,1,1,1,1
 access_course_group_member,course.group.member,model_course_group_member,base.group_user,1,1,1,1
 access_group_member_payment,group.member.payment,model_group_member_payment,base.group_user,1,1,1,1
+access_teacher_salary,teacher.salary,model_teacher_salary,base.group_user,1,1,1,1
 access_course_group_schedule,course.group.schedule,model_course_group_schedule,base.group_user,1,1,1,1
 access_course_group_lesson_day,course.group.lesson.day,model_course_group_lesson_day,base.group_user,1,1,1,1
 access_course_program,course.program,model_course_program,base.group_user,1,1,1,1
