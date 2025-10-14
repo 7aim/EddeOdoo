@@ -146,7 +146,7 @@
 
     <!-- Menu Items -->
     <menuitem id="menu_group_member_payment"
-              name="💰 Ödənişlər"
+              name="💰 Tələbə Ödənişləri"
               parent="menu_edde_root"
               action="action_group_member_payment"
               sequence="25"/>

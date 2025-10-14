@@ -23,7 +23,7 @@
             
             <!-- Add student fields in a new page -->
             <page name="internal_notes" position="after">
-                <page string="👨‍🏫 Müəllim Məlumatları" invisible="is_teacher == 'False'">
+                <page string="👨‍🏫 Müəllim Məlumatları" invisible="is_teacher == False">
                     <group string="Maaş Parametrləri">
                         <group>
                             <field name="salary_type"/>
@@ -39,7 +39,7 @@
                         • <strong>Faizli Maaş:</strong> Həmin ayda keçdiyi dərs sayı × dərs başına məbləğ
                     </div>
                 </page>
-                <page string="🎓 Tələbə Məlumatları" invisible="[('is_teacher', '=', True)]">
+                <page string="🎓 Tələbə Məlumatları" invisible="is_teacher == True">
                     <group>
                         <field name="program_id" widget="many2many_tags"/>
                         <field name="course_id" widget="many2many_tags"/>
@@ -96,7 +96,7 @@
                 <field name="email"/>
                 <button name="action_create_salary" type="object" 
                         icon="fa-money" title="Maaş Yarat"
-                        string="💰 Maaş"/>
+                        string="Ödəniş Yarat"/>
             </list>
         </field>
     </record>

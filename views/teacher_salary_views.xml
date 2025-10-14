@@ -175,7 +175,7 @@
 
     <!-- Menu Items -->
     <menuitem id="menu_teacher_salary"
-              name="💰 Müəllim Maaşları"
+              name="💰 Müəllim Ödənişləri"
               parent="menu_edde_root"
               action="action_teacher_salary"
               sequence="30"/>
